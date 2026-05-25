@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec3713",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221310",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 px-6 md:px-40 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
+<div class="flex items-center gap-3 text-slate-900 dark:text-slate-100">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-4xl">pets</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">宠物纪念馆</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex items-center justify-center p-6">
+<div class="layout-content-container flex flex-col max-w-[480px] w-full bg-white dark:bg-slate-900 shadow-xl shadow-primary/5 rounded-xl p-8 border border-primary/5">
+<div class="mb-8 text-center">
+<div class="inline-flex items-center justify-center p-3 bg-primary/5 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+</div>
+<h1 class="text-slate-900 dark:text-slate-100 text-3xl font-bold leading-tight mb-2">开启纪念之旅</h1>
+<p class="text-slate-600 dark:text-slate-400 text-sm">在这片充满爱的空间，记录与TA的点滴回忆。</p>
+</div>
+<form class="flex flex-col gap-5">
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">姓名</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">person</span>
+<input class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-primary/10 bg-background-light dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400" placeholder="如何称呼您？" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">电子邮箱</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">mail</span>
+<input class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-primary/10 bg-background-light dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400" placeholder="请输入您的邮箱地址" type="email"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">设置密码</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">lock</span>
+<input class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-primary/10 bg-background-light dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400" placeholder="至少6位字符" type="password"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">确认密码</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">lock_reset</span>
+<input class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-primary/10 bg-background-light dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400" placeholder="请再次输入密码" type="password"/>
+</div>
+</div>
+<div class="mt-4">
+<button class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-primary/20" type="submit">
+<span>开始纪念</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</form>
+<div class="mt-8 pt-6 border-t border-primary/10 text-center">
+<p class="text-slate-600 dark:text-slate-400 text-sm">
+                            已有账号？ 
+                            <a class="text-primary font-semibold hover:underline" href="#">立即登录</a>
+</p>
+</div>
+</div>
+</main>
+<footer class="p-8 text-center">
+<div class="flex justify-center gap-6 mb-4">
+<div class="flex items-center gap-1 text-primary/40">
+<span class="material-symbols-outlined text-sm">potted_plant</span>
+<span class="text-xs">怀念</span>
+</div>
+<div class="flex items-center gap-1 text-primary/40">
+<span class="material-symbols-outlined text-sm">favorite</span>
+<span class="text-xs">永恒</span>
+</div>
+<div class="flex items-center gap-1 text-primary/40">
+<span class="material-symbols-outlined text-sm">stars</span>
+<span class="text-xs">守护</span>
+</div>
+</div>
+<p class="text-slate-400 text-xs">© 2024 宠物纪念馆 · 让爱在数字世界永存</p>
+</footer>
+<div class="fixed bottom-0 left-0 w-full h-1/2 -z-10 opacity-10 pointer-events-none overflow-hidden">
+<div class="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/20 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-20 -right-20 w-80 h-80 bg-primary/20 rounded-full blur-3xl"></div>
+<div class="flex justify-center items-end h-full">
+<span class="material-symbols-outlined text-[20rem] text-primary/10">pets</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

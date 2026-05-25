@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec3713",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221310",
+                        "warm-wood": "#9a594c",
+                        "soft-cream": "#fcf9f8",
+                        "card-beige": "#f3e9e7"
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
+        }
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .masonry-grid {
+                column-count: 2;
+            }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                column-count: 3;
+            }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex flex-col w-full">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-warm-wood/10 px-4 md:px-20 py-3 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-2xl">cloud</span>
+</div>
+<h2 class="text-warm-wood dark:text-slate-100 text-xl font-bold tracking-tight">云端社区</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold text-sm" href="#">广场</a>
+<a class="text-warm-wood hover:text-primary transition-colors text-sm font-medium" href="#">关注</a>
+<a class="text-warm-wood hover:text-primary transition-colors text-sm font-medium" href="#">治愈屋</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 flex-1 justify-end">
+<div class="relative max-w-xs w-full hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-warm-wood/60 text-lg">search</span>
+<input class="w-full bg-card-beige border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-warm-wood/50" placeholder="搜索温暖回忆..." type="text"/>
+</div>
+<button class="p-2 rounded-xl bg-card-beige text-warm-wood hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDqh91EymulQHuJcEFebnLKjlfFUL3nvHp8j46y1UjxZs93FDzVJjILbio4IC1ZJsPYtqe_-g9VE2vyiXbBdqVTEmiV53KWCvQQ9QXTAvCGbzF-cYM8YB-F-wDRpVwFJ6ZSJgx2Ls36akNTJAA0rmUKrjSrebrSzYq2UUob7gaZRzmoUI6DxGfFlI1aGR2Ii4arQEZkeTE2Ms92zdQCCkaa0GZAhao1O_koovJb1fCq7ZaaPLS4nQCI0jnh2Yiv8sPP7nx-KXaothU");'></div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto w-full px-4 py-8">
+<!-- Hero Section / Tab Switch -->
+<div class="mb-10 text-center">
+<h1 class="text-3xl md:text-4xl font-bold text-warm-wood mb-4">每一份思念，都有回响</h1>
+<p class="text-warm-wood/70 max-w-lg mx-auto mb-8">在这里，所有的告别都不是结束，而是另一种形式的陪伴。给那个TA送去一个拥抱吧。</p>
+<div class="inline-flex p-1 bg-card-beige rounded-xl">
+<button class="px-6 py-2 bg-white dark:bg-warm-wood shadow-sm rounded-lg text-primary font-bold text-sm">最新思念</button>
+<button class="px-6 py-2 text-warm-wood/60 font-medium text-sm hover:text-warm-wood">热门回忆</button>
+<button class="px-6 py-2 text-warm-wood/60 font-medium text-sm hover:text-warm-wood">治愈瞬间</button>
+</div>
+</div>
+<!-- Masonry Grid Layout -->
+<div class="masonry-grid">
+<!-- Card 1 -->
+<div class="masonry-item group bg-soft-cream dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-warm-wood/5">
+<img class="w-full h-auto object-cover" data-alt="Cute sleeping cat on a warm blanket" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtIwNQLrmzpo6l6iJpxAHRH995i-nzrJyMGOrD4OkZ6Y6nDVSAtE8TXIBkjb9sqK2R__7AxIOkVSBSIH5O10zB6NpYHLntp9yONpmAbaN29mXD-UxuMqvaSg4MBfS-IrkvYk-91XPuzawif29zwaHrGj8yUynqgTlMBCpdXwUVvrWk-uXgq4NG1Q4dMsbRnrKt7sub5adyzDxmef7-eNDieHbGuVCpdCowEou-mJaVdaOumVmSLjmjJEFm6Vx_BPBQ1w0l3KeLjxk"/>
+<div class="p-5">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-8 rounded-full bg-cover" data-alt="Avatar of user Mochi" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKZq67Izjwtq5JprK7JX8yywIAEo8CvaPucnzyaIlKTzH6vygvTbnGLsBiN9mZX5E7eGEMKivKS3Mh-2q4BQnZ7UlHa4giicZefPhoVAJXoHT-i4qr8Dvw4xlKFFRCuDEJM_BvIllXYbiboWhM5pHS665AWscTnnBvgjEdaylxdjtp3SIVUqKMyDI1jRCqY1ExJ5-6AXIbPs701aEWsIdrOw2TGlwIdfG8oIWHotEdk8UFIi_VWtMchkrDWfU1CzUWx7k3Wz3tpyM');"></div>
+<div>
+<p class="text-sm font-bold text-warm-wood">沫沫与大橘</p>
+<p class="text-[10px] text-warm-wood/50">3小时前发布</p>
+</div>
+</div>
+<h3 class="text-lg font-bold text-warm-wood mb-2 leading-snug">大橘，在喵星也要按时吃饭哦</h3>
+<p class="text-sm text-warm-wood/80 leading-relaxed mb-4">今天整理柜子发现了你最爱的逗猫棒，好像下一秒你就会从沙发底下钻出来。在那边一定要胖胖的。🍂</p>
+<div class="flex items-center justify-between border-t border-warm-wood/10 pt-4">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">ecg_heart</span>
+<span class="text-xs font-bold">拥抱 (28)</span>
+</button>
+<button class="flex items-center gap-1.5 text-warm-wood/60 hover:text-warm-wood transition-colors">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+<span class="text-xs font-bold">递纸巾 (12)</span>
+</button>
+</div>
+<button class="text-warm-wood/40 hover:text-primary">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="masonry-item group bg-soft-cream dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-warm-wood/5">
+<img class="w-full h-auto object-cover" data-alt="Golden Retriever playing in flowers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgiAQaF0peWIVcXgf86-k48n3qMZOnl2BC5qZTDzbIYpc6vtTvr06b672lJBu9L3n5IrcXEubcJPx3mW5awuGBk8Q9MeRU7BOWlQ6mb9bcrxfyvL7wk0mRiWC8Ylgn-ylxnhTEweZcarOZvFznIXOFC-HU1oR3A6pT15Q2X-Qet39pE-TBtE8Eqtp9ueL9ooctJGJUaBcLIs4K7konULev9vKM_gs_L3qd3972eUxn8gr7sucK2xYFfLI_xIm3EqMgNnsfpQgKtJ8"/>
+<div class="p-5">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-8 rounded-full bg-cover" data-alt="Avatar of user Sunny" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAJE5ZBr5_YPwHJLoMvUtyGjAdkwaP1YGP09tey8537P6gjf9U5QCUPqd02Fd7db9xxAz9dgIUjrBw1hAGhRVoARPttP4I9NX-JxtjBHgtQ6JxzkZs6r7EOHzZmQOTpvN7YIHWyHT9ci7GddKl4uFLcstKmtSiquSJZtN6ob4yFIO1c-8_yeHG5aFIHID5-0Yv9sXqinuoJl-UTt4z0QztH6rRzTZyw6L6RVMDAAHRi3PzYQV4Z-Ri4rcfX6Ol5Y9YreZOhmhtdSF4');"></div>
+<div>
+<p class="text-sm font-bold text-warm-wood">阳光下的布丁</p>
+<p class="text-[10px] text-warm-wood/50">12小时前发布</p>
+</div>
+</div>
+<h3 class="text-lg font-bold text-warm-wood mb-2 leading-snug">陪我走过十年的少年</h3>
+<p class="text-sm text-warm-wood/80 leading-relaxed mb-4">谢谢你，让我学会了如何去爱。你的项圈我一直挂在床头，感觉你从未离开。我想你。🌼</p>
+<div class="flex items-center justify-between border-t border-warm-wood/10 pt-4">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">ecg_heart</span>
+<span class="text-xs font-bold">拥抱 (156)</span>
+</button>
+<button class="flex items-center gap-1.5 text-warm-wood/60 hover:text-warm-wood transition-colors">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+<span class="text-xs font-bold">递纸巾 (45)</span>
+</button>
+</div>
+<button class="text-warm-wood/40 hover:text-primary">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="masonry-item group bg-soft-cream dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-warm-wood/5">
+<div class="p-5">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-8 rounded-full bg-cover" data-alt="Avatar of user Blue Cloud" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDS3jdnlo5nGtWA4HrKHoidcGr0U9wguOBAqupNrzZMS6WlaQHkNdRSAa8xx8RRT6zXdeMtPIf-3MlU9U1Y-nBP0Z94im41fGGbblJV0ceVJRRZZIXL__RrPLXhfUOEFecBjrfcHiq9taoq131dePS-YT3B9-asSijIop-RD29-iv9oSzjzGW6DMH6nw_wbUk1qa5jlUJmYRbIayrgxLQL8LuS6diq8o_MiXucJCh0f3hKOgl--81jqJajfSJ1tbiDLoEe3IN_R91Q');"></div>
+<div>
+<p class="text-sm font-bold text-warm-wood">云端信使</p>
+<p class="text-[10px] text-warm-wood/50">1天前发布</p>
+</div>
+</div>
+<h3 class="text-lg font-bold text-warm-wood mb-2 leading-snug">今天拍到了形状像小兔子的云</h3>
+<p class="text-sm text-warm-wood/80 leading-relaxed mb-4">一定是你在看我对不对？虽然你很小，但你给我的勇气很大。🐰☁️</p>
+<img class="w-full h-48 object-cover rounded-lg mb-4" data-alt="White bunny on soft grass" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpeuiChjYctylqqPC-pT9y8QArKA5EmIVfmPFVGDsOl3u-9lDEFQ6FwIfQQefOziWcoTmIbXKqkHdwdmzYhHMVy9aYhE6UdHhCFbUm74XUrqylLE6raYeqh97OfsguH7-uApVBSzu9-z2pb3LE0XfGUzFg61IvIAXGubRp-ZvYM1nyn9lz94bGsWz8U0HqCE90FXOxk6c9pbAPht1gParJAHLgMzMh3CBnBvUp2RixntIdeBFdPIgY5Ph_sLdXFJZUUbI01Lq27_0"/>
+<div class="flex items-center justify-between border-t border-warm-wood/10 pt-4">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">ecg_heart</span>
+<span class="text-xs font-bold">拥抱 (34)</span>
+</button>
+<button class="flex items-center gap-1.5 text-warm-wood/60 hover:text-warm-wood transition-colors">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+<span class="text-xs font-bold">递纸巾 (8)</span>
+</button>
+</div>
+<button class="text-warm-wood/40 hover:text-primary">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="masonry-item group bg-soft-cream dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-warm-wood/5">
+<img class="w-full h-auto object-cover" data-alt="Corgi dog smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAREWxeF-tY1dDF1WSAJvKN-KMS05TBleN7QZhUpqN6xqadhGdBkto5P89dbf9ARWHulEYKqwLhICUsGgHP5lYfuWgBi0-MiOnlQNr2N7c7IfwS_5FVfZVkgscVbGxvdT8UNIuDPek2JOCzq8SBWsukixERD1x0w1bZ6_VEa-nrVMUCdhGV6Ppm_0FZtYWhglptKbQ5yUFSia04gfymn7-82HNlKe9O1hBulUvK6Y1-xEYA5sIYf8-Gff19zdqgCgSj4GouZCFLCAU"/>
+<div class="p-5">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-8 rounded-full bg-cover" data-alt="Avatar of user Wood" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBfwvon7z0fSoIklvLuo18tu0IbQE5sAyUD4cC1wX0LUkIAfYBOOAe6euAMmDCEFBBFuGLQfTzamT9gwss6CJL5LI8n-_f4aPqZCKbWVF9AK0aEPg-10E4ma5qWQRIVOP0Kv7-Il7J3lVSqAKOHw2DtkewQkuM20q1ecb1fJJSMRCh0_KBeGE6lYN5i4fxE1_C0W6ZrS_sEFwLHHlRVY_DtqZ8yKCqolJKj0L50tYVTmZojVPXPV62HM_JJ8beXqdc4qZY71SMBe4M');"></div>
+<div>
+<p class="text-sm font-bold text-warm-wood">森林里的短腿</p>
+<p class="text-[10px] text-warm-wood/50">2天前发布</p>
+</div>
+</div>
+<h3 class="text-lg font-bold text-warm-wood mb-2 leading-snug">宝贝，在那边要开心地跑啊</h3>
+<p class="text-sm text-warm-wood/80 leading-relaxed mb-4">想起你因为腿短够不到球时的样子，还是忍不住会笑。你是这个世界上最好的治愈师。</p>
+<div class="flex items-center justify-between border-t border-warm-wood/10 pt-4">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">ecg_heart</span>
+<span class="text-xs font-bold">拥抱 (82)</span>
+</button>
+<button class="flex items-center gap-1.5 text-warm-wood/60 hover:text-warm-wood transition-colors">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+<span class="text-xs font-bold">递纸巾 (19)</span>
+</button>
+</div>
+<button class="text-warm-wood/40 hover:text-primary">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="masonry-item group bg-soft-cream dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-warm-wood/5">
+<img class="w-full h-auto object-cover" data-alt="Black and white kitten" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDORF2_27RedlF8NNtn4ubAZweTBD1NGegUBfV0FBhXYt2pAcdbvDqwCZEjOyotDWTrIR-GPQG4rKILN1HU8opMNYkOhNH5tFT8eQL-nsfnJj7y_8OsN2OhoGj0DXN_zBx_AHqa8WRcmZmg9ua7bBkk7gmxx5KG2S0q26QotmPLq021CYoCPQyvxEFiEoKY4BywYNwV75ZujmAe6zwKMLFIfU37Etof7xhkUUOeLYY86YXcWzuS1pQwgKS91c1qvs9R-kHjeTNqWVk"/>
+<div class="p-5">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-8 rounded-full bg-cover" data-alt="Avatar of user Luna" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBybVOBlzcfSM1MwfCcRuB2QOcvr-7o5ctChV52q8HjtkFJ3vzvW7LIzVJZnU5eXq7OIkT2VJCx4Xw-BRxK63YX3NRcnKMsqCR2smwIhLMLe3KL6xPQj76seqdNhj6Tb-p7z_gCY0JyWulFWiKVbVuT8fpAz7PPEdqhpLaIHngHIqhejKG4hpGRZAsEL5pEXCuRepnwZIgghIg8dY1IzSPfO0Ak9pJhzE3Y5SJBgntUOqCd5ODWkmiLUs7DWc_bF0zhA0Em13nuiNU');"></div>
+<div>
+<p class="text-sm font-bold text-warm-wood">月亮守护者</p>
+<p class="text-[10px] text-warm-wood/50">2天前发布</p>
+</div>
+</div>
+<h3 class="text-lg font-bold text-warm-wood mb-2 leading-snug">即使只相遇了三个月</h3>
+<p class="text-sm text-warm-wood/80 leading-relaxed mb-4">生命虽然短暂，但爱是永恒的。谢谢你来过我的生命里，小黑。🖤</p>
+<div class="flex items-center justify-between border-t border-warm-wood/10 pt-4">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">ecg_heart</span>
+<span class="text-xs font-bold">拥抱 (203)</span>
+</button>
+<button class="flex items-center gap-1.5 text-warm-wood/60 hover:text-warm-wood transition-colors">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+<span class="text-xs font-bold">递纸巾 (94)</span>
+</button>
+</div>
+<button class="text-warm-wood/40 hover:text-primary">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="masonry-item group bg-soft-cream dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-warm-wood/5">
+<div class="p-5">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-8 rounded-full bg-cover" data-alt="Avatar of user Memory" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCBDCyXNPHZtY1yhQM0IQi4gTAp7eKcU2OtX1jZe8-K2akuZTYXKUXryfqiUGwqIEDgNRW26trCN7yoquOHWqR_dzyLAekREUn1_uagFfkB8po2WJYyM9aCaLw4xQcJ_jhZKqwyS77z3wyOSPi1VLI51liogq-Ka0tA9cebkabDDCplrUv78nKvfceRyz9LEd4UHleKQSbdzIg-eHIXPx7jHAnREe5xmqke11AaYUDRk5YefA0QnmNWZVhTOtfkexg6gl1yz2xnwNs');"></div>
+<div>
+<p class="text-sm font-bold text-warm-wood">拾荒的时光</p>
+<p class="text-[10px] text-warm-wood/50">3天前发布</p>
+</div>
+</div>
+<h3 class="text-lg font-bold text-warm-wood mb-2 leading-snug">你在那边交到新朋友了吗？</h3>
+<p class="text-sm text-warm-wood/80 leading-relaxed mb-4">我知道你在那里一定没有痛苦，草坪一定是软绵绵的，蝴蝶一定是抓不完的。记得想我。🌈</p>
+<div class="flex items-center justify-between border-t border-warm-wood/10 pt-4">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-primary/80 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">ecg_heart</span>
+<span class="text-xs font-bold">拥抱 (45)</span>
+</button>
+<button class="flex items-center gap-1.5 text-warm-wood/60 hover:text-warm-wood transition-colors">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+<span class="text-xs font-bold">递纸巾 (7)</span>
+</button>
+</div>
+<button class="text-warm-wood/40 hover:text-primary">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination / Load More -->
+<div class="mt-12 text-center">
+<button class="px-8 py-3 bg-card-beige hover:bg-warm-wood/10 text-warm-wood font-bold rounded-xl transition-all inline-flex items-center gap-2">
+                查看更多思念
+                <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 size-16 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-110 transition-transform z-40 group">
+<span class="material-symbols-outlined text-3xl">edit</span>
+<span class="absolute right-full mr-4 bg-white text-warm-wood px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap shadow-md opacity-0 group-hover:opacity-100 transition-opacity">发布思念</span>
+</button>
+<!-- Footer -->
+<footer class="bg-card-beige dark:bg-warm-wood/10 py-12 px-4 border-t border-warm-wood/10 mt-12">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-warm-wood p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-xl">cloud</span>
+</div>
+<h2 class="text-warm-wood text-lg font-bold tracking-tight">云端社区 HealingCommunity</h2>
+</div>
+<div class="flex gap-8 text-warm-wood/60 text-sm font-medium">
+<a class="hover:text-primary transition-colors" href="#">关于我们</a>
+<a class="hover:text-primary transition-colors" href="#">温暖准则</a>
+<a class="hover:text-primary transition-colors" href="#">隐私保护</a>
+<a class="hover:text-primary transition-colors" href="#">联系我们</a>
+</div>
+<p class="text-warm-wood/40 text-xs">© 2024 云端社区 - 温暖云端，爱不缺席</p>
+</div>
+</footer>
+</div>
+</body></html>

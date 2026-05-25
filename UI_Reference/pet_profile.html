@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec3713",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221310",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-10 flex items-center justify-between border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 px-6 py-4 backdrop-blur-md lg:px-40">
+<div class="flex items-center gap-3">
+<button class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold tracking-tight">Pet Profile</h2>
+</div>
+<div class="flex gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<main class="mx-auto flex w-full max-w-[960px] flex-1 flex-col p-6 lg:px-10">
+<!-- Profile Hero Section -->
+<section class="flex flex-col items-center gap-4 py-8">
+<div class="relative group">
+<div class="size-32 rounded-full border-4 border-white dark:border-slate-800 bg-center bg-cover shadow-xl" data-alt="Close up photo of a golden retriever dog" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCOLJCWhrQZay99gUIi8ErMrlkDQ5_MBUUe8PsagmiFQjUCJy0txlxTPSQV2cjV8Q0HEC4rdYhkyk3vSgQqx5a9AyRzoKXxFIPsnKJo932dZJQdOQzyhoGsfrEjjwIYYqkDAVZrSXN6f6Ck9oRhaCN03PfQ0YgknVojy-1Ct6VxU_FliNNer4qZUV6FbBoq0OfASa-NpzhtY-lw-YlRYPKGbssw5w8ITqYOniQ_E6685MUe58o1s2wkbYhTNwR-QnYj4yXfXdjuTEc')">
+</div>
+<div class="absolute bottom-1 right-1 size-8 rounded-full bg-primary flex items-center justify-center text-white border-2 border-white dark:border-slate-800">
+<span class="material-symbols-outlined text-sm">pets</span>
+</div>
+</div>
+<div class="text-center">
+<h1 class="text-3xl font-extrabold tracking-tight">Buddy</h1>
+<p class="text-primary font-medium">Golden Retriever • 3 Years Old</p>
+</div>
+</section>
+<!-- Health Summary Grid -->
+<section class="mb-8">
+<h2 class="mb-4 text-xl font-bold tracking-tight">Health Summary</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-3 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm border border-primary/5">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">monitor_weight</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Current Weight</p>
+<p class="text-lg font-bold">32.4 kg</p>
+</div>
+</div>
+<div class="h-1.5 w-full overflow-hidden rounded-full bg-primary/5">
+<div class="h-full w-4/5 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm border border-primary/5">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">exercise</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Daily Activity</p>
+<p class="text-lg font-bold">45 min</p>
+</div>
+</div>
+<div class="h-1.5 w-full overflow-hidden rounded-full bg-primary/5">
+<div class="h-full w-2/3 bg-primary rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Basic Information Section -->
+<section class="mb-8 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-primary/5">
+<h2 class="mb-5 text-xl font-bold tracking-tight">Basic Information</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-1">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Breed</p>
+<p class="font-medium">Golden Retriever</p>
+</div>
+<div class="space-y-1">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Date of Birth</p>
+<p class="font-medium">March 12, 2021</p>
+</div>
+<div class="space-y-1">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Gender</p>
+<p class="font-medium">Male (Neutered)</p>
+</div>
+<div class="space-y-1 md:col-span-3">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Personality (性格特征)</p>
+<div class="flex flex-wrap gap-2 pt-1">
+<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">Friendly</span>
+<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">Energetic</span>
+<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">Loves Swimming</span>
+<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">Food Motivated</span>
+</div>
+</div>
+</div>
+</section><section class="mb-8 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-primary/5">
+<h2 class="mb-5 text-xl font-bold tracking-tight">Unique Habits (独特习惯)</h2>
+<div class="grid grid-cols-1 gap-6">
+<div class="space-y-1">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Special Behaviors</p>
+<div class="flex flex-wrap gap-2 pt-1">
+<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">Likes to sleep in the sun</span>
+<span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">Chases its own tail when happy</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Medical History Section -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xl font-bold tracking-tight">Medical History</h2>
+<button class="text-sm font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span> Add Record
+                        </button>
+</div>
+<div class="space-y-3">
+<!-- Record 1 -->
+<div class="flex items-center justify-between rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex size-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined">vaccines</span>
+</div>
+<div>
+<p class="font-bold">Rabies Vaccine</p>
+<p class="text-sm text-slate-500">Annual booster completed</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Oct 24, 2023</p>
+<p class="text-xs text-green-600 font-medium">Valid</p>
+</div>
+</div>
+<!-- Record 2 -->
+<div class="flex items-center justify-between rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex size-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+<div>
+<p class="font-bold">Routine Checkup</p>
+<p class="text-sm text-slate-500">General wellness exam</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Aug 15, 2023</p>
+<p class="text-xs text-slate-400">History</p>
+</div>
+</div>
+<!-- Record 3 -->
+<div class="flex items-center justify-between rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="flex size-12 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+<span class="material-symbols-outlined">pest_control</span>
+</div>
+<div>
+<p class="font-bold">Heartworm Treatment</p>
+<p class="text-sm text-slate-500">Monthly preventive dose</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Jan 02, 2024</p>
+<p class="text-xs text-primary font-bold">Upcoming</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Action Button -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-[960px] px-6">
+<button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-white shadow-lg shadow-primary/30 transition-transform hover:scale-[1.02] active:scale-95">
+<span class="material-symbols-outlined">share</span>
+<span class="font-bold">Share Pet Profile</span>
+</button>
+</div>
+</main>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#ec3713",
+                    "background-light": "#f8f6f6",
+                    "background-dark": "#221310",
+                },
+                fontFamily: {
+                    "display": ["Plus Jakarta Sans"]
+                },
+                borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<title>Pet Companionship - App Store</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+
+<!-- Status Bar (Mobile Simulation) -->
+<div class="flex items-center justify-between px-6 py-2 text-xs font-medium text-slate-500">
+    <span>9:41</span>
+    <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm">signal_cellular_alt</span>
+        <span class="material-symbols-outlined text-sm">wifi</span>
+        <span class="material-symbols-outlined text-sm">battery_full</span>
+    </div>
+</div>
+
+<!-- Top Navigation -->
+<header class="sticky top-0 z-10 flex items-center justify-between border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 px-6 py-3 backdrop-blur-md">
+    <button class="flex items-center gap-1 text-primary font-medium">
+        <span class="material-symbols-outlined text-xl">chevron_left</span>
+        <span class="text-sm">Search</span>
+    </button>
+    <button class="flex size-8 items-center justify-center rounded-full text-primary">
+        <span class="material-symbols-outlined">more_horiz</span>
+    </button>
+</header>
+
+<main class="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
+
+    <!-- App Header Section -->
+    <section class="flex items-start gap-4 px-6 py-5">
+        <!-- App Icon -->
+        <div class="size-[100px] shrink-0 rounded-[22px] bg-gradient-to-br from-primary to-orange-400 shadow-lg shadow-primary/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-5xl" style="font-variation-settings: 'FILL' 1">pets</span>
+        </div>
+        <!-- App Info -->
+        <div class="flex flex-1 flex-col gap-1.5">
+            <h1 class="text-xl font-extrabold tracking-tight leading-tight">Pet Companionship</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Virtual Pet Studio</p>
+            <div class="mt-1 flex items-center gap-3">
+                <button class="rounded-full bg-primary px-6 py-1.5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-transform active:scale-95">
+                    GET
+                </button>
+                <button class="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-xl">share</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Stats Bar -->
+    <section class="flex items-center justify-around border-y border-slate-200/60 dark:border-slate-700/40 px-6 py-3">
+        <div class="flex flex-col items-center">
+            <div class="flex items-center gap-0.5">
+                <span class="text-sm font-bold">4.8</span>
+                <span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1">star</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-0.5">2.1K Ratings</p>
+        </div>
+        <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm font-bold">12+</span>
+            <p class="text-[10px] text-slate-400 mt-0.5">Age</p>
+        </div>
+        <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm font-bold">#3</span>
+            <p class="text-[10px] text-slate-400 mt-0.5">Lifestyle</p>
+        </div>
+        <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm font-bold">86 MB</span>
+            <p class="text-[10px] text-slate-400 mt-0.5">Size</p>
+        </div>
+    </section>
+
+    <!-- Screenshots Carousel -->
+    <section class="py-5">
+        <div class="flex gap-3 overflow-x-auto px-6 pb-2 snap-x snap-mandatory scrollbar-hide" style="-webkit-overflow-scrolling: touch;">
+            <!-- Screenshot 1 - Pet Profile -->
+            <div class="snap-start shrink-0 w-[220px] h-[390px] rounded-2xl bg-gradient-to-b from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/40 shadow-sm overflow-hidden flex flex-col">
+                <div class="flex-1 flex flex-col items-center justify-center gap-3 p-4">
+                    <div class="size-20 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-amber-700" style="font-variation-settings: 'FILL' 1">pets</span>
+                    </div>
+                    <p class="font-bold text-sm">Meet Buddy</p>
+                    <p class="text-xs text-slate-400 text-center">Golden Retriever • 3 yrs</p>
+                    <div class="flex gap-1.5 mt-1">
+                        <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Friendly</span>
+                        <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Energetic</span>
+                    </div>
+                </div>
+                <div class="bg-primary/5 px-4 py-3 text-center">
+                    <p class="text-[11px] font-semibold text-primary">Pet Profile</p>
+                </div>
+            </div>
+            <!-- Screenshot 2 - Desktop Pet -->
+            <div class="snap-start shrink-0 w-[220px] h-[390px] rounded-2xl bg-gradient-to-b from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/40 shadow-sm overflow-hidden flex flex-col">
+                <div class="flex-1 flex flex-col items-center justify-center gap-3 p-4">
+                    <div class="relative">
+                        <div class="w-40 h-24 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-slate-300 text-4xl">desktop_windows</span>
+                        </div>
+                        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-end">
+                            <span class="material-symbols-outlined text-primary text-3xl animate-bounce" style="font-variation-settings: 'FILL' 1">pets</span>
+                        </div>
+                    </div>
+                    <p class="font-bold text-sm mt-4">Desktop Companion</p>
+                    <p class="text-xs text-slate-400 text-center px-2">Your pet lives on your desktop, walking, sleeping & playing</p>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900/20 px-4 py-3 text-center">
+                    <p class="text-[11px] font-semibold text-blue-600">Desktop Mode</p>
+                </div>
+            </div>
+            <!-- Screenshot 3 - Memory Palace -->
+            <div class="snap-start shrink-0 w-[220px] h-[390px] rounded-2xl bg-gradient-to-b from-purple-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/40 shadow-sm overflow-hidden flex flex-col">
+                <div class="flex-1 flex flex-col items-center justify-center gap-3 p-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="size-16 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-purple-500" style="font-variation-settings: 'FILL' 1">photo_camera</span>
+                        </div>
+                        <div class="size-16 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-pink-500" style="font-variation-settings: 'FILL' 1">favorite</span>
+                        </div>
+                        <div class="size-16 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-amber-500" style="font-variation-settings: 'FILL' 1">emoji_events</span>
+                        </div>
+                        <div class="size-16 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-green-500" style="font-variation-settings: 'FILL' 1">park</span>
+                        </div>
+                    </div>
+                    <p class="font-bold text-sm mt-2">Memory Palace</p>
+                    <p class="text-xs text-slate-400 text-center px-2">Collect precious moments with your pet</p>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-900/20 px-4 py-3 text-center">
+                    <p class="text-[11px] font-semibold text-purple-600">Memories</p>
+                </div>
+            </div>
+            <!-- Screenshot 4 - Community -->
+            <div class="snap-start shrink-0 w-[220px] h-[390px] rounded-2xl bg-gradient-to-b from-green-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-200/60 dark:border-slate-700/40 shadow-sm overflow-hidden flex flex-col">
+                <div class="flex-1 flex flex-col items-center justify-center gap-3 p-4">
+                    <div class="flex -space-x-3">
+                        <div class="size-12 rounded-full bg-primary/20 border-2 border-white flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">pets</span>
+                        </div>
+                        <div class="size-12 rounded-full bg-blue-200 border-2 border-white flex items-center justify-center">
+                            <span class="material-symbols-outlined text-blue-600 text-sm" style="font-variation-settings: 'FILL' 1">pets</span>
+                        </div>
+                        <div class="size-12 rounded-full bg-amber-200 border-2 border-white flex items-center justify-center">
+                            <span class="material-symbols-outlined text-amber-600 text-sm" style="font-variation-settings: 'FILL' 1">pets</span>
+                        </div>
+                    </div>
+                    <p class="font-bold text-sm mt-2">Pet Community</p>
+                    <p class="text-xs text-slate-400 text-center px-2">Share stories, make friends & join events</p>
+                    <div class="flex gap-2 mt-1">
+                        <span class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-600">12K Members</span>
+                    </div>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 px-4 py-3 text-center">
+                    <p class="text-[11px] font-semibold text-green-600">Community</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Description -->
+    <section class="px-6 py-4">
+        <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            Pet Companionship brings your beloved pet to life as an adorable 2D animated companion that lives right on your device. Upload a photo of your pet and watch it come alive with charming animations — idle, sleeping, eating, and walking around your screen.
+        </p>
+        <button class="mt-2 text-sm font-bold text-primary">more</button>
+    </section>
+
+    <!-- What's New -->
+    <section class="px-6 py-4 border-t border-slate-200/60 dark:border-slate-700/40">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-bold tracking-tight">What's New</h2>
+            <button class="text-sm font-bold text-primary">Version History</button>
+        </div>
+        <p class="text-xs text-slate-400 mb-2">Version 1.0.0 • 1 week ago</p>
+        <ul class="space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
+            <li class="flex items-start gap-2">
+                <span class="text-primary mt-0.5">•</span>
+                <span>Initial release with desktop pet companion</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-primary mt-0.5">•</span>
+                <span>Upload photos to create your virtual pet</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-primary mt-0.5">•</span>
+                <span>5 animated actions: idle, sleep, eat, walk & play</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-primary mt-0.5">•</span>
+                <span>Memory Palace to save precious moments</span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Features Highlights -->
+    <section class="px-6 py-5 border-t border-slate-200/60 dark:border-slate-700/40">
+        <h2 class="text-lg font-bold tracking-tight mb-4">Features</h2>
+        <div class="space-y-4">
+            <div class="flex items-start gap-4">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">auto_awesome</span>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">AI-Powered Pet Creation</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Upload any pet photo and transform it into a living 2D animated companion</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">desktop_windows</span>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">Desktop & Dynamic Island</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Your pet roams freely on your desktop or iPhone's Dynamic Island</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-900/30">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">castle</span>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">Memory Palace</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Build a beautiful collection of memories and milestones with your pet</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/30">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">groups</span>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">Pet Community</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Connect with other pet lovers, share stories and join fun events</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ratings & Reviews -->
+    <section class="px-6 py-5 border-t border-slate-200/60 dark:border-slate-700/40">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold tracking-tight">Ratings & Reviews</h2>
+            <button class="text-sm font-bold text-primary">See All</button>
+        </div>
+        <!-- Rating Summary -->
+        <div class="flex items-center gap-6 mb-5">
+            <div class="text-center">
+                <p class="text-5xl font-extrabold">4.8</p>
+                <p class="text-xs text-slate-400 mt-1">out of 5</p>
+            </div>
+            <div class="flex-1 space-y-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 w-3">5</span>
+                    <div class="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full w-[72%] bg-primary rounded-full"></div></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 w-3">4</span>
+                    <div class="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full w-[20%] bg-primary rounded-full"></div></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 w-3">3</span>
+                    <div class="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full w-[5%] bg-primary rounded-full"></div></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 w-3">2</span>
+                    <div class="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full w-[2%] bg-primary rounded-full"></div></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 w-3">1</span>
+                    <div class="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full w-[1%] bg-primary rounded-full"></div></div>
+                </div>
+            </div>
+        </div>
+        <!-- Review Cards -->
+        <div class="space-y-4">
+            <div class="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-primary/5">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <p class="text-sm font-bold">PetLover2024</p>
+                        <div class="flex gap-0.5 mt-0.5">
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400">Mar 10, 2026</p>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Love watching my little pixel pet walk around on my desktop! The idle and sleeping animations are so cute. Can't wait for more actions!</p>
+            </div>
+            <div class="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-primary/5">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <p class="text-sm font-bold">DogMom_Luna</p>
+                        <div class="flex gap-0.5 mt-0.5">
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                            <span class="material-symbols-outlined text-slate-300 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400">Mar 5, 2026</p>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-300">The memory palace feature is genius! I uploaded all my photos with Luna and now I have a beautiful timeline. Would love Dynamic Island support soon!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Information -->
+    <section class="px-6 py-5 border-t border-slate-200/60 dark:border-slate-700/40 mb-20">
+        <h2 class="text-lg font-bold tracking-tight mb-4">Information</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Provider</p>
+                <p class="text-sm font-medium">Pet Companionship Studio</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Size</p>
+                <p class="text-sm font-medium">86 MB</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Category</p>
+                <p class="text-sm font-medium text-primary">Lifestyle</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Compatibility</p>
+                <p class="text-sm font-medium">iOS 16.0+, macOS 13.0+, Windows 10+</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Languages</p>
+                <p class="text-sm font-medium">English, Chinese (Simplified)</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Age Rating</p>
+                <p class="text-sm font-medium">12+</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">Price</p>
+                <p class="text-sm font-medium">Free</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+</div>
+</div>
+</body></html>
