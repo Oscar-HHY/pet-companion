@@ -3,7 +3,6 @@ import { supabase } from './supabaseClient';
 
 export interface GeneratePixelPetResult {
   imageUrl: string;
-  prompt: string;
 }
 
 /**
@@ -31,5 +30,5 @@ export async function generatePixelPet(
     throw new Error('API 返回数据格式异常：未找到生成的图片 URL');
   }
 
-  return { imageUrl: data.imageUrl, prompt: data.prompt };
+  return { imageUrl: data.imageUrl };
 }

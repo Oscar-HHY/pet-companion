@@ -36,6 +36,10 @@ export default function ChatDetailScreen() {
   const [blocked, setBlocked] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  // Last incoming-from-friend message id we've already marked as read.
+  // Stops the effect below from running an UPDATE on every realtime tick
+  // when nothing new has arrived from the friend.
+  const lastMarkedFriendMsgId = useRef<string | null>(null);
 
   const goToFriendProfile = useCallback(() => {
     navigation.push('UserProfileView', { targetUserId: friendId });
@@ -95,6 +99,14 @@ export default function ChatDetailScreen() {
   useEffect(() => { if (currentUserId) loadAvatars(currentUserId); }, [currentUserId, loadAvatars]);
   useEffect(() => {
     if (!currentUserId || !friendId) return;
+    // Only flip is_read when there's a NEW incoming message from this
+    // friend that we haven't already processed. `messages` changes on
+    // every send/receive — without this guard we issued an UPDATE +
+    // refreshBadge round-trip on each tick.
+    const lastFromFriend = [...messages].reverse().find((m) => m.sender_id === friendId);
+    if (!lastFromFriend) return;
+    if (lastMarkedFriendMsgId.current === lastFromFriend.id) return;
+    lastMarkedFriendMsgId.current = lastFromFriend.id;
     markMessagesAsRead(currentUserId, friendId).then(() => refreshBadge()).catch((e) => console.warn('markRead:', e.message));
   }, [currentUserId, friendId, messages, refreshBadge]);
 

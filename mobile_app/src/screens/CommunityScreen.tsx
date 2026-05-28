@@ -45,7 +45,6 @@ function PostCard({
   commentCount,
   onHug,
   onTissue,
-  onShare,
   onDelete,
   onAvatarPress,
   onComment,
@@ -60,7 +59,6 @@ function PostCard({
   commentCount: number;
   onHug: () => void;
   onTissue: () => void;
-  onShare: () => void;
   onDelete: () => void;
   onAvatarPress: () => void;
   onComment: () => void;
@@ -137,9 +135,6 @@ function PostCard({
               </Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={onShare} activeOpacity={0.6}>
-            <MaterialIcons name="share" size={18} color="rgba(154,89,76,0.4)" />
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -384,10 +379,6 @@ export default function CommunityScreen() {
     ]);
   };
 
-  const handleShare = (post: CommunityPost) => {
-    Alert.alert(t('community_share'), `${post.title}${t('community_share_msg')}`);
-  };
-
   const handleAvatarPress = (userId: string) => {
     navigation.push('UserProfileView', { targetUserId: userId });
   };
@@ -454,7 +445,6 @@ export default function CommunityScreen() {
       commentCount={commentCounts[item.id!] || 0}
       onHug={() => handleToggle(item.id!, 'hugs_users')}
       onTissue={() => handleToggle(item.id!, 'tissues_users')}
-      onShare={() => handleShare(item)}
       onDelete={() => handleDelete(item)}
       onAvatarPress={() => handleAvatarPress(item.user_id)}
       onComment={() => openCommentModal(item.id!)}

@@ -26,12 +26,12 @@ In the Supabase Dashboard:
 2. Click **"Add user"** → **"Create new user"**
 3. **Reviewer #1**:
    - Email: `bei.chen725+reviewer1@gmail.com`
-   - Password: `ReviewPet2026!` (or generate your own — note it down)
+   - Password: `<REVIEWER_PASSWORD>` (or generate your own — note it down)
    - ✅ check **"Auto Confirm User"** so no email confirmation is needed
    - Click **Create user**
 4. Repeat for **Reviewer #2**:
    - Email: `bei.chen725+reviewer2@gmail.com`
-   - Password: `ReviewPet2026!`
+   - Password: `<REVIEWER_PASSWORD>`
    - ✅ Auto Confirm User
 5. After creation, click each user row and **copy their UUID** — you'll need them for the seed SQL.
 
@@ -77,11 +77,11 @@ ON CONFLICT (id) DO UPDATE
       search_handle = EXCLUDED.search_handle,
       email = EXCLUDED.email;
 
--- 2. Pet for each account
-INSERT INTO pets (id, user_id, name, breed, age, bio, status)
+-- 2. Pet for each account. pets PK is user_id (no separate id column); client upserts with onConflict: 'user_id'.
+INSERT INTO pets (user_id, name, breed, age, bio, status)
 VALUES
-  (gen_random_uuid(), reviewer1, 'Mocha', 'Labrador Retriever', '3 years', 'Loves long walks and peanut butter.', 'idle'),
-  (gen_random_uuid(), reviewer2, 'Pixel', 'Persian Cat',        '2 years', 'Indoor cat with a strong opinion on cardboard boxes.', 'idle');
+  (reviewer1, 'Mocha', 'Labrador Retriever', '3 years', 'Loves long walks and peanut butter.', 'idle'),
+  (reviewer2, 'Pixel', 'Persian Cat',        '2 years', 'Indoor cat with a strong opinion on cardboard boxes.', 'idle');
 
 -- 3. Vaccinations — one upcoming so the Health screen shows a reminder
 INSERT INTO vaccinations (id, user_id, vaccine_date, dose_number, next_due_date)
@@ -107,11 +107,13 @@ INSERT INTO memory_diaries (id, user_id, title, content, created_at)
 VALUES
   (gen_random_uuid(), reviewer1, 'First snow', 'Mocha saw snow for the first time today and tried to eat it. Pure joy.', now() - interval '5 days');
 
--- 7. Community posts (one each)
-INSERT INTO community_posts (user_id, author_name, title, content, hugs_count, tissues_count, created_at)
+-- 7. Community posts (one each). hugs_users / tissues_users are text[] arrays of user IDs;
+--    the UI derives counts via .length. Seeding each post with the other reviewer's UUID in
+--    hugs_users gives each post 1 hug for a non-empty display.
+INSERT INTO community_posts (user_id, author_name, title, content, hugs_users, tissues_users, created_at)
 VALUES
-  (reviewer1, 'Mocha''s Mom', 'Looking for hiking buddies', 'Mocha and I hike every Sunday morning. Anyone with a friendly dog want to join?', 3, 0, now() - interval '2 days'),
-  (reviewer2, 'Pixel''s Dad', 'Best cardboard boxes ranked', 'After extensive Pixel-led testing: Amazon boxes > Costco boxes > shipping tubes. Discuss.', 7, 0, now() - interval '1 day');
+  (reviewer1, 'Mocha''s Mom', 'Looking for hiking buddies', 'Mocha and I hike every Sunday morning. Anyone with a friendly dog want to join?', ARRAY[reviewer2]::text[], ARRAY[]::text[], now() - interval '2 days'),
+  (reviewer2, 'Pixel''s Dad', 'Best cardboard boxes ranked', 'After extensive Pixel-led testing: Amazon boxes > Costco boxes > shipping tubes. Discuss.', ARRAY[reviewer1]::text[], ARRAY[]::text[], now() - interval '1 day');
 
 -- 8. Friendship — accepted both ways so they show in each other's friends list
 INSERT INTO friendships (requester_id, receiver_id, status)
@@ -150,7 +152,7 @@ When you submit your build for review, App Store Connect shows a section called 
 ```
 Sign-In Required: Yes
 User Name: bei.chen725+reviewer1@gmail.com
-Password: ReviewPet2026!
+Password: <REVIEWER_PASSWORD>
 ```
 
 ### Notes (Notes to Reviewer)
@@ -161,8 +163,8 @@ Hi Apple Review Team,
 Pet Companion is a pet care + memory + light social app. Below are credentials and walkthrough tips for testing.
 
 — Demo accounts —
-Primary:   bei.chen725+reviewer1@gmail.com  / ReviewPet2026!
-Secondary: bei.chen725+reviewer2@gmail.com  / ReviewPet2026!
+Primary:   bei.chen725+reviewer1@gmail.com  / <REVIEWER_PASSWORD>
+Secondary: bei.chen725+reviewer2@gmail.com  / <REVIEWER_PASSWORD>
 
 Both accounts are pre-seeded with a pet, vaccination records, and a couple of community posts. They are already friends, so the chat and friend-list features can be tested by logging in with the primary account.
 
@@ -171,7 +173,7 @@ Both accounts are pre-seeded with a pet, vaccination records, and a couple of co
 2. "宠物" / "Pet" tab — see Mocha's profile, tap "散步 / Walk" to start a Companion Dock session. The Live Activity appears on the Lock Screen / Dynamic Island.
 3. "健康 / Health" tab — see logged vaccinations, weight records, and one medical record. An upcoming vaccination shows a reminder banner.
 4. "社区 / Community" tab — view two sample posts. Tap to comment or report.
-5. "聊天 / Friends" tab — open the chat with "Pixel's Dad" to see prior messages and send a new one.
+5. "好友 / Friends" tab — open the chat with "Pixel's Dad" to see prior messages and send a new one.
 6. "我的 / Me" tab — open Settings to test language toggle (中文 / English), dark mode, and theme color picker.
 
 — Vaccination reminders —

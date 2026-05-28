@@ -20,7 +20,11 @@ export async function ensureNotificationPermission(): Promise<boolean> {
   // re-enables in Settings → Pet Companion → Notifications.
   const { status: existing } = await Notifications.getPermissionsAsync();
   if (existing === 'granted') return true;
-  if (existing === 'denied') return false; // Re-prompting after denial is a no-op on iOS; let the caller surface a Settings link.
+  // Re-prompting after denial is a no-op on iOS; the caller should surface
+  // a Settings link. On Android, requestPermissionsAsync still works after
+  // the user toggles the permission back on in system settings, so we let
+  // the request path run.
+  if (existing === 'denied' && Platform.OS === 'ios') return false;
   const { status } = await Notifications.requestPermissionsAsync({
     ios: { allowAlert: true, allowBadge: false, allowSound: true },
   });

@@ -48,28 +48,41 @@ function json(body: unknown, status = 200) {
 }
 
 // Recursively list every object key under `<userId>/` in a bucket.
+// Paginates each directory so users with > LIST_PAGE files still get
+// fully cleaned up (one upload of multi-frame Memory videos can blow past
+// the default 100-row Supabase limit fast).
 async function listAllUnder(
   admin: ReturnType<typeof createClient>,
   bucket: string,
   prefix: string,
 ): Promise<string[]> {
+  const LIST_PAGE = 1000;
   const out: string[] = [];
   const stack: string[] = [prefix];
   while (stack.length) {
     const dir = stack.pop()!;
-    const { data, error } = await admin.storage.from(bucket).list(dir, { limit: 1000 });
-    if (error) {
-      console.warn(`[delete-account] list failed bucket=${bucket} dir=${dir}: ${error.message}`);
-      continue;
-    }
-    for (const item of data ?? []) {
-      const path = `${dir}/${item.name}`;
-      // Folders show up with id === null
-      if (item.id === null) {
-        stack.push(path);
-      } else {
-        out.push(path);
+    let offset = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await admin.storage
+        .from(bucket)
+        .list(dir, { limit: LIST_PAGE, offset });
+      if (error) {
+        console.warn(`[delete-account] list failed bucket=${bucket} dir=${dir} offset=${offset}: ${error.message}`);
+        break;
       }
+      const rows = data ?? [];
+      for (const item of rows) {
+        const path = `${dir}/${item.name}`;
+        // Folders show up with id === null
+        if (item.id === null) {
+          stack.push(path);
+        } else {
+          out.push(path);
+        }
+      }
+      if (rows.length < LIST_PAGE) break;
+      offset += LIST_PAGE;
     }
   }
   return out;

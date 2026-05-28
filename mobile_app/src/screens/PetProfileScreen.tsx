@@ -617,10 +617,6 @@ export default function PetProfileScreen() {
 
       {isOwnPet && (
         <>
-          <TouchableOpacity style={styles.shareButton} activeOpacity={0.85}>
-            <MaterialIcons name="share" size={20} color="#fff" />
-            <Text style={styles.shareButtonText}>{t('pet_share')}</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={[styles.logoutButton, { backgroundColor: themeCardBg }]} activeOpacity={0.85} onPress={handleLogout}>
             <MaterialIcons name="logout" size={20} color={colors.primary} />
             <Text style={styles.logoutButtonText}>{t('pet_logout')}</Text>

@@ -2,7 +2,7 @@
 // Proxies pixel-pet avatar generation to Seedream so SEEDREAM_API_KEY stays server-side.
 //
 // Request  (POST JSON):  { imageBase64: string, petBreed?: string, petFeatures?: string }
-// Response (JSON):       { imageUrl: string, prompt: string }
+// Response (JSON):       { imageUrl: string }
 //
 // JWT verification is enforced by the Supabase Functions runtime (default behavior).
 // Set the key once with:  supabase secrets set SEEDREAM_API_KEY=<key>
@@ -108,5 +108,8 @@ Deno.serve(async (req) => {
     return json({ error: 'seedream_no_url' }, 502);
   }
 
-  return json({ imageUrl, prompt });
+  // Intentionally omit the prompt from the response — leaking the safety
+  // prefix ("ANIMAL ONLY, STRICTLY NO HUMANS, NO ANIME GIRLS") makes it
+  // easier for a caller to craft a payload that escapes it.
+  return json({ imageUrl });
 });

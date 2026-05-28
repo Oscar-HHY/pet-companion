@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Pet Companion",
+    "name": "萌宠无忧",
     "slug": "petcompanion",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,7 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.beichen.petcompanion",
       "config": {
         "usesNonExemptEncryption": false

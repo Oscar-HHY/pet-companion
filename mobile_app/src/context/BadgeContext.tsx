@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabaseClient';
@@ -31,20 +31,17 @@ export function BadgeProvider({ children }: { children: React.ReactNode }) {
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
   const [pendingFriendCount, setPendingFriendCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
-  const userIdRef = useRef<string | null>(null);
 
   const refreshBadge = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setUserId(null);
-        userIdRef.current = null;
         setUnreadCount(0);
         setUnreadMsgCount(0);
         setPendingFriendCount(0);
         return;
       }
-      userIdRef.current = user.id;
       setUserId(user.id);
 
       const lastSeen = await SecureStore.getItemAsync(LAST_SEEN_KEY) || '1970-01-01T00:00:00Z';
@@ -121,6 +118,10 @@ export function BadgeProvider({ children }: { children: React.ReactNode }) {
 
   // Subscribe to realtime events for the current user. Any incoming message
   // or friend-request change triggers an immediate badge refresh.
+  // Two friendship subscriptions: receiver_id catches "someone sent me a
+  // request" + "I accepted"; requester_id catches "the other party accepted
+  // a request I sent" — without it, the sender only sees the accept after
+  // the 60s poll fires.
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
@@ -133,6 +134,11 @@ export function BadgeProvider({ children }: { children: React.ReactNode }) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'friendships', filter: `receiver_id=eq.${userId}` },
+        () => { refreshBadge(); },
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'friendships', filter: `requester_id=eq.${userId}` },
         () => { refreshBadge(); },
       )
       .subscribe();
