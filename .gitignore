@@ -78,3 +78,6 @@ venv/
 *.tsbuildinfo
 .next/
 coverage/
+
+# Local-only notes with credentials (reviewer passwords etc.)
+*.secrets.local.md

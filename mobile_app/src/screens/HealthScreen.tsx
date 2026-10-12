@@ -2,8 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
   Alert, RefreshControl, Modal, ActivityIndicator, Platform,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { supabase } from '../services/supabaseClient';
@@ -13,13 +15,17 @@ import {
   addMedicalRecord, updateMedicalRecord, getMedicalRecords, deleteMedicalRecord, MedicalRecord,
   addVaccination, getVaccinations, deleteVaccination, setVaccinationReminderId, Vaccination,
   addWeightRecord, getWeightRecords, deleteWeightRecord, WeightRecord,
+  uploadMedicalReportImage, getMedicalReportImageUrl, deleteMedicalReportImages,
 } from '../services/PetDatabaseService';
+import { extractMedicalReport, AssistantError } from '../services/PetAssistantService';
 import { scheduleVaccinationReminder, cancelReminder, scheduleTestReminder } from '../services/notifications';
 import { useSettings } from '../context/SettingsContext';
 import { useT } from '../i18n';
 import { colors } from '../theme/colors';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
+const MAX_REPORT_IMAGES = 6;
+const consentKey = (userId: string) => `ai_ocr_consent_${userId}`;
 
 function fmtTime(iso?: string): string {
   if (!iso) return '';
@@ -69,6 +75,16 @@ export default function HealthScreen() {
   const [mMedication, setMMedication] = useState('');
   const [mNotes, setMNotes] = useState('');
   const [mEditingId, setMEditingId] = useState<string | null>(null);
+  const [mVisitDate, setMVisitDate] = useState('');
+  const [mImagePaths, setMImagePaths] = useState<string[]>([]);
+  // path → displayable uri (local file for fresh picks, signed URL for saved ones)
+  const [mImageUris, setMImageUris] = useState<Record<string, string>>({});
+  // uploaded during this modal session — deleted again if the user cancels
+  const [mUploadedPaths, setMUploadedPaths] = useState<string[]>([]);
+  const [mOriginalPaths, setMOriginalPaths] = useState<string[]>([]);
+  const [mOcrText, setMOcrText] = useState('');
+  const [mExtracting, setMExtracting] = useState(false);
+  const [vName, setVName] = useState('');
   const [vDate, setVDate] = useState('');
   const [vDoseNumber, setVDoseNumber] = useState('');
   const [vNextDate, setVNextDate] = useState('');
@@ -101,13 +117,105 @@ export default function HealthScreen() {
   const openMedicalModal = (existing?: MedicalRecord) => {
     if (existing) { setMEditingId(existing.id || null); setMClinic(existing.clinic_name || ''); setMDiagnosis(existing.diagnosis || ''); setMTreatmentPlan(existing.treatment || ''); setMMedication(existing.medications || ''); setMNotes(existing.notes || ''); }
     else { setMEditingId(null); setMClinic(''); setMDiagnosis(''); setMTreatmentPlan(''); setMMedication(''); setMNotes(''); }
+    const paths = existing?.report_image_paths ?? [];
+    setMVisitDate(existing?.visit_date || ''); setMOcrText(existing?.report_ocr_text || '');
+    setMImagePaths(paths); setMOriginalPaths(paths); setMUploadedPaths([]); setMImageUris({});
     setMedicalModalVisible(true);
+    paths.forEach((path) => {
+      getMedicalReportImageUrl(path)
+        .then((url) => setMImageUris((prev) => ({ ...prev, [path]: url })))
+        .catch((e) => console.warn('[Health] report image url:', e.message));
+    });
   };
+  const closeMedicalModal = () => {
+    // Drop photos uploaded in this session that never got saved to a record.
+    deleteMedicalReportImages(mUploadedPaths).catch((e) => console.warn('[Health] cleanup:', e.message));
+    setMedicalModalVisible(false);
+  };
+  const pickReportImages = async () => {
+    if (!userId) return;
+    const room = MAX_REPORT_IMAGES - mImagePaths.length;
+    if (room <= 0) { Alert.alert(t('tip'), t('health_report_max').replace('{n}', String(MAX_REPORT_IMAGES))); return; }
+    const consent = await AsyncStorage.getItem(consentKey(userId)).catch(() => null);
+    if (consent !== 'yes') {
+      const agreed = await new Promise<boolean>((resolve) => {
+        Alert.alert(t('health_report_consent_title'), t('health_report_consent_body'), [
+          { text: t('cancel'), style: 'cancel', onPress: () => resolve(false) },
+          { text: t('ai_consent_agree'), onPress: () => resolve(true) },
+        ], { cancelable: true, onDismiss: () => resolve(false) });
+      });
+      if (!agreed) return;
+      await AsyncStorage.setItem(consentKey(userId), 'yes').catch(() => {});
+    }
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') { Alert.alert(t('memory_cannot_open'), t('memory_album_permission')); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: room, quality: 0.7,
+    });
+    if (result.canceled || !result.assets?.length) return;
+
+    setMExtracting(true);
+    const newPaths: string[] = [];
+    try {
+      for (const asset of result.assets.slice(0, room)) {
+        const path = await uploadMedicalReportImage(userId, asset.uri);
+        newPaths.push(path);
+        // Track each file as soon as it's stored so a later failure can't orphan it.
+        setMImageUris((prev) => ({ ...prev, [path]: asset.uri }));
+        setMImagePaths((prev) => [...prev, path]);
+        setMUploadedPaths((prev) => [...prev, path]);
+      }
+    } catch (e: any) {
+      setMExtracting(false);
+      Alert.alert(t('health_save_fail'), e.message);
+      return;
+    }
+
+    try {
+      const r = await extractMedicalReport(newPaths);
+      // Only fill fields the user hasn't typed into; never overwrite their input.
+      if (r.clinic_name) setMClinic((v) => v || r.clinic_name);
+      if (r.visit_date) setMVisitDate((v) => v || r.visit_date);
+      if (r.diagnosis) setMDiagnosis((v) => v || r.diagnosis);
+      if (r.treatment) setMTreatmentPlan((v) => v || r.treatment);
+      if (r.medications) setMMedication((v) => v || r.medications);
+      if (r.notes) setMNotes((v) => (v ? `${v}\n${r.notes}` : r.notes));
+      if (r.raw_text) setMOcrText((v) => (v ? `${v}\n\n${r.raw_text}` : r.raw_text));
+      Alert.alert(t('health_report_extracted_title'), t('health_report_extracted_body'));
+    } catch (e: any) {
+      const msg = e instanceof AssistantError && e.code === 'daily_limit_reached' ? t('health_report_limit') : t('health_report_extract_fail');
+      // Images that did upload stay attached; the user can fill fields by hand.
+      Alert.alert(t('tip'), msg);
+    } finally {
+      setMExtracting(false);
+    }
+  };
+  const removeReportImage = (path: string) => setMImagePaths((prev) => {
+    const next = prev.filter((p) => p !== path);
+    if (next.length === 0) setMOcrText('');
+    return next;
+  });
   const saveMedical = async () => {
-    if (!userId) return; setSaving(true);
-    const payload = { clinic_name: mClinic.trim(), diagnosis: mDiagnosis.trim(), treatment: mTreatmentPlan.trim(), medications: mMedication.trim(), notes: mNotes.trim() };
-    try { if (mEditingId) await updateMedicalRecord(mEditingId, payload); else await addMedicalRecord(userId, payload); setMedicalModalVisible(false); await loadAll(); }
+    if (!userId) return;
+    if (mVisitDate && mVisitDate.length !== 10) { Alert.alert(t('tip'), t('health_visit_date_format_err')); return; }
+    setSaving(true);
+    const payload = {
+      clinic_name: mClinic.trim(), diagnosis: mDiagnosis.trim(), treatment: mTreatmentPlan.trim(), medications: mMedication.trim(), notes: mNotes.trim(),
+      visit_date: mVisitDate || null, report_image_paths: mImagePaths, report_ocr_text: mOcrText.trim() || null,
+    };
+    try {
+      if (mEditingId) await updateMedicalRecord(mEditingId, payload); else await addMedicalRecord(userId, payload);
+      // Photos removed in the editor (previously saved or uploaded just now) are no longer referenced.
+      const orphaned = [...mOriginalPaths, ...mUploadedPaths].filter((p) => !mImagePaths.includes(p));
+      deleteMedicalReportImages(orphaned).catch((e) => console.warn('[Health] cleanup:', e.message));
+      setMUploadedPaths([]);
+      setMedicalModalVisible(false); await loadAll();
+    }
     catch (e: any) { Alert.alert(t('health_save_fail'), e.message); } finally { setSaving(false); }
+  };
+  const deleteMedicalWithImages = async (item: MedicalRecord) => {
+    await deleteMedicalRecord(item.id!);
+    deleteMedicalReportImages(item.report_image_paths ?? []).catch((e) => console.warn('[Health] cleanup:', e.message));
   };
 
   const formatDateInput = (text: string): string => {
@@ -116,14 +224,14 @@ export default function HealthScreen() {
     if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
     return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
   };
-  const openVaccineModal = () => { setVDate(''); setVDoseNumber(''); setVNextDate(''); setVaccineModalVisible(true); };
+  const openVaccineModal = () => { setVName(''); setVDate(''); setVDoseNumber(''); setVNextDate(''); setVaccineModalVisible(true); };
   const saveVaccine = async () => {
     if (!userId) return;
     if (vDate.length !== 10) { Alert.alert(t('tip'), t('health_vaccine_date_hint')); return; }
     if (vNextDate && vNextDate.length !== 10) { Alert.alert(t('tip'), t('health_vaccine_date_format_err')); return; }
     setSaving(true);
     try {
-      const saved = await addVaccination(userId, { vaccine_date: vDate, dose_number: vDoseNumber.trim(), next_due_date: vNextDate || '' });
+      const saved = await addVaccination(userId, { vaccine_name: vName.trim() || null, vaccine_date: vDate, dose_number: vDoseNumber.trim(), next_due_date: vNextDate || '' });
       if (vNextDate && saved.id) {
         const reminderId = await scheduleVaccinationReminder({
           petName: petName,
@@ -231,14 +339,21 @@ export default function HealthScreen() {
                 <View key={item.id} style={styles.recordCard}>
                   <View style={styles.recordHeader}>
                     {item.clinic_name ? <Text style={[styles.recordSymptom, { flex: 1, color: themeTextColor }]}>{item.clinic_name}</Text> : <View style={{ flex: 1 }} />}
-                    <TouchableOpacity style={styles.deleteBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} onPress={() => confirmDelete(t('health_medical_name'), () => deleteMedicalRecord(item.id!))}>
+                    <TouchableOpacity style={styles.deleteBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} onPress={() => confirmDelete(t('health_medical_name'), () => deleteMedicalWithImages(item))}>
                       <Ionicons name="trash-outline" size={18} color="#dc2626" />
                     </TouchableOpacity>
                   </View>
+                  {item.visit_date ? <Text style={[styles.recordDetail, { color: themeSecondaryText }]}>{t('health_visit_date_prefix')}{item.visit_date}</Text> : null}
                   {item.diagnosis ? <Text style={[styles.recordDetail, { color: themeSecondaryText }]}>{t('health_diagnosis_prefix')}{item.diagnosis}</Text> : null}
                   {item.treatment ? <Text style={[styles.recordDetail, { color: themeSecondaryText }]}>{t('health_treatment_prefix2')}{item.treatment}</Text> : null}
                   {item.medications ? <Text style={[styles.recordDetail, { color: themeSecondaryText }]}>{t('health_medication_prefix')}{item.medications}</Text> : null}
                   {item.notes ? <Text style={[styles.recordDetail, { color: themeSecondaryText }]}>{t('health_notes_prefix')}{item.notes}</Text> : null}
+                  {item.report_image_paths?.length ? (
+                    <View style={styles.attachBadge}>
+                      <MaterialIcons name="attach-file" size={13} color={colors.primary} />
+                      <Text style={styles.attachBadgeText}>{t('health_report_attached').replace('{n}', String(item.report_image_paths.length))}</Text>
+                    </View>
+                  ) : null}
                   <View style={styles.recordFooter}>
                     <Text style={styles.recordTime}>{fmtTime(item.updated_at || item.created_at)}{item.updated_at && item.updated_at !== item.created_at ? t('health_updated') : ''}</Text>
                     <TouchableOpacity style={styles.updateBtn} onPress={() => openMedicalModal(item)}>
@@ -283,7 +398,7 @@ export default function HealthScreen() {
                   )}
                   <View style={styles.recordCard}>
                     <View style={styles.recordHeader}>
-                      <Text style={[styles.recordSymptom, { flex: 1, color: themeTextColor }]}>{t('health_vaccine_dose_prefix')}{item.dose_number || '?'}{t('health_vaccine_dose_suffix')}</Text>
+                      <Text style={[styles.recordSymptom, { flex: 1, color: themeTextColor }]}>{item.vaccine_name ? `${item.vaccine_name} · ` : ''}{t('health_vaccine_dose_prefix')}{item.dose_number || '?'}{t('health_vaccine_dose_suffix')}</Text>
                       <TouchableOpacity style={styles.deleteBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} onPress={() => confirmDelete(t('health_vaccine_name'), () => deleteVaccineWithReminder(item))}>
                         <Ionicons name="trash-outline" size={18} color="#dc2626" />
                       </TouchableOpacity>
@@ -351,10 +466,29 @@ export default function HealthScreen() {
       </Modal>
 
       {/* Medical Modal */}
-      <Modal visible={medicalModalVisible} transparent animationType="fade" onRequestClose={() => setMedicalModalVisible(false)}>
+      <Modal visible={medicalModalVisible} transparent animationType="fade" onRequestClose={closeMedicalModal}>
         <View style={styles.modalOverlay}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}><View style={[styles.modalCard, { backgroundColor: themeCardBg }]}>
           <Text style={[styles.modalTitle, { color: themeTextColor }]}>{mEditingId ? t('health_update_medical') : t('health_add_medical')}</Text>
-          <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 420 }}>
+          <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 460 }}>
+            <TouchableOpacity style={styles.reportUploadBtn} onPress={pickReportImages} disabled={saving || mExtracting}>
+              {mExtracting ? <ActivityIndicator color={colors.primary} size="small" /> : <MaterialIcons name="document-scanner" size={20} color={colors.primary} />}
+              <Text style={styles.reportUploadText}>{mExtracting ? t('health_report_extracting') : t('health_report_upload')}</Text>
+            </TouchableOpacity>
+            <Text style={[styles.reportHint, { color: themeSecondaryText }]}>{t('health_report_hint')}</Text>
+            {mImagePaths.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
+                {mImagePaths.map((path) => (
+                  <View key={path} style={styles.reportThumbWrap}>
+                    {mImageUris[path] ? <Image source={{ uri: mImageUris[path] }} style={styles.reportThumb} /> : <View style={[styles.reportThumb, styles.reportThumbPlaceholder]}><ActivityIndicator size="small" color={colors.slate400} /></View>}
+                    <TouchableOpacity style={styles.reportThumbRemove} onPress={() => removeReportImage(path)} disabled={saving || mExtracting} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                      <MaterialIcons name="close" size={14} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+            <Text style={[styles.modalLabel, { color: themeSecondaryText }]}>{t('health_visit_date_label')}</Text>
+            <TextInput style={[styles.modalInput, { color: themeTextColor }]} placeholder={t('health_vaccine_next_placeholder')} placeholderTextColor={colors.slate400} value={mVisitDate} onChangeText={(txt) => setMVisitDate(formatDateInput(txt))} keyboardType="numeric" maxLength={10} editable={!saving} />
             <Text style={[styles.modalLabel, { color: themeSecondaryText }]}>{t('health_clinic_label')}</Text>
             <TextInput style={[styles.modalInput, { color: themeTextColor }]} placeholder={t('health_clinic_placeholder')} placeholderTextColor={colors.slate400} value={mClinic} onChangeText={setMClinic} editable={!saving} />
             <Text style={[styles.modalLabel, { color: themeSecondaryText }]}>{t('health_diagnosis_label')}</Text>
@@ -367,8 +501,8 @@ export default function HealthScreen() {
             <TextInput style={[styles.modalInput, { height: 72, textAlignVertical: 'top', color: themeTextColor }]} placeholder={t('health_notes_placeholder')} placeholderTextColor={colors.slate400} value={mNotes} onChangeText={setMNotes} editable={!saving} multiline numberOfLines={3} />
           </ScrollView>
           <View style={styles.modalActions}>
-            <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setMedicalModalVisible(false)} disabled={saving}><Text style={styles.modalCancelText}>{t('cancel')}</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalSaveBtn} onPress={saveMedical} disabled={saving}>{saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.modalSaveText}>{mEditingId ? t('health_update_btn') : t('save')}</Text>}</TouchableOpacity>
+            <TouchableOpacity style={styles.modalCancelBtn} onPress={closeMedicalModal} disabled={saving || mExtracting}><Text style={styles.modalCancelText}>{t('cancel')}</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.modalSaveBtn} onPress={saveMedical} disabled={saving || mExtracting}>{saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.modalSaveText}>{mEditingId ? t('health_update_btn') : t('save')}</Text>}</TouchableOpacity>
           </View>
         </View></KeyboardAvoidingView></View>
       </Modal>
@@ -377,6 +511,8 @@ export default function HealthScreen() {
       <Modal visible={vaccineModalVisible} transparent animationType="fade" onRequestClose={() => setVaccineModalVisible(false)}>
         <View style={styles.modalOverlay}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalKeyboard}><View style={[styles.modalCard, { backgroundColor: themeCardBg }]}>
           <Text style={[styles.modalTitle, { color: themeTextColor }]}>{t('health_add_vaccine')}</Text>
+          <Text style={[styles.modalLabel, { color: themeSecondaryText }]}>{t('health_vaccine_type_label')}</Text>
+          <TextInput style={[styles.modalInput, { color: themeTextColor }]} placeholder={t('health_vaccine_type_placeholder')} placeholderTextColor={colors.slate400} value={vName} onChangeText={setVName} editable={!saving} />
           <Text style={[styles.modalLabel, { color: themeSecondaryText }]}>{t('health_vaccine_date_label')}</Text>
           <TextInput style={[styles.modalInput, { color: themeTextColor }]} placeholder="YYYY-MM-DD" placeholderTextColor={colors.slate400} value={vDate} onChangeText={(txt) => setVDate(formatDateInput(txt))} keyboardType="numeric" maxLength={10} editable={!saving} />
           <Text style={[styles.modalLabel, { color: themeSecondaryText }]}>{t('health_vaccine_dose_label')}</Text>
@@ -446,6 +582,15 @@ const styles = StyleSheet.create({
   updateBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, backgroundColor: colors.primaryLight },
   updateBtnText: { fontSize: 12, fontWeight: '600', color: colors.primary },
   deleteBtn: { marginLeft: 10, padding: 4 },
+  attachBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-start', marginTop: 6, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, backgroundColor: colors.primaryLight },
+  attachBadgeText: { fontSize: 11, fontWeight: '600', color: colors.primary },
+  reportUploadBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.primary, backgroundColor: colors.primaryLight },
+  reportUploadText: { fontSize: 14, fontWeight: '700', color: colors.primary },
+  reportHint: { fontSize: 11, marginTop: 6, textAlign: 'center' },
+  reportThumbWrap: { marginRight: 4, paddingTop: 6, paddingRight: 6 },
+  reportThumb: { width: 64, height: 64, borderRadius: 8 },
+  reportThumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(128,128,128,0.1)' },
+  reportThumbRemove: { position: 'absolute', top: 0, right: 0, width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   alertBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: '#fecaca' },
   alertText: { fontSize: 13, fontWeight: '600', color: '#dc2626', flex: 1 },
   weightRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, padding: 14, marginBottom: 10, backgroundColor: 'rgba(128,128,128,0.06)' },

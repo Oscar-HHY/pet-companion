@@ -56,6 +56,11 @@ export default function DrawerWrapper({ children }: Props) {
     );
   };
 
+  const handleAssistant = () => {
+    close();
+    navigation.navigate('PetAssistant');
+  };
+
   const handleSettings = () => {
     close();
     navigation.navigate('Settings');
@@ -95,6 +100,10 @@ export default function DrawerWrapper({ children }: Props) {
               <TouchableOpacity style={styles.menuItem} onPress={handleHome}>
                 <MaterialIcons name="home" size={22} color={isDark ? '#f1f5f9' : colors.warmWood} />
                 <Text style={[styles.menuText, { color: isDark ? '#f1f5f9' : colors.warmWood }]}>{t('drawer_home')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem} onPress={handleAssistant}>
+                <MaterialIcons name="auto-awesome" size={22} color={isDark ? '#f1f5f9' : colors.warmWood} />
+                <Text style={[styles.menuText, { color: isDark ? '#f1f5f9' : colors.warmWood }]}>{t('drawer_assistant')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
                 <MaterialIcons name="settings" size={22} color={isDark ? '#f1f5f9' : colors.warmWood} />

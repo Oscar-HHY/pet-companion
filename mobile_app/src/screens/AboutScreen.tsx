@@ -7,6 +7,7 @@ import { colors } from '../theme/colors';
 
 export const PRIVACY_POLICY_URL = 'https://oscar-hhy.github.io/pet-companion-privacy/';
 export const EULA_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+export const SUPPORT_EMAIL = 'somethingimportant002@gmail.com';
 
 async function openExternal(url: string, label: string) {
   try {
@@ -46,7 +47,7 @@ export default function AboutScreen({ navigation }: any) {
         </View>
 
         <Text style={[styles.appName, { fontSize: 26 * fontSizeMultiplier, color: themeTextColor }]}>
-          {t ? 'Pet Companion' : '宠物伴侣'}
+          {t ? 'Pet Companion' : '萌宠无忧'}
         </Text>
 
         <View style={styles.versionBadge}>
@@ -90,6 +91,22 @@ export default function AboutScreen({ navigation }: any) {
             <Text style={[styles.legalText, { fontSize: 14 * fontSizeMultiplier, color: themeTextColor }]}>
               {t ? 'Terms of Use (EULA)' : '使用条款 (EULA)'}
             </Text>
+            <MaterialIcons name="open-in-new" size={14} color={themeSecondaryText} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.legalRow, { backgroundColor: themeCardBg, borderColor: cardBorder }]}
+            onPress={() => openExternal(`mailto:${SUPPORT_EMAIL}`, t ? 'Contact Us' : '联系我们')}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="mail-outline" size={18} color={themeSecondaryText} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.legalText, { flex: 0, fontSize: 14 * fontSizeMultiplier, color: themeTextColor }]}>
+                {t ? 'Contact Us' : '联系我们'}
+              </Text>
+              <Text style={{ fontSize: 12 * fontSizeMultiplier, color: themeSecondaryText, marginTop: 2 }}>
+                {SUPPORT_EMAIL}
+              </Text>
+            </View>
             <MaterialIcons name="open-in-new" size={14} color={themeSecondaryText} />
           </TouchableOpacity>
         </View>

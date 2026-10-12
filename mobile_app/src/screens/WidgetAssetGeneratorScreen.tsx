@@ -32,16 +32,22 @@ const ACTIVITY_SLOTS: Array<{
 type AvatarMap = Record<string, string | null>;
 
 // ── 工具函数 ──────────────────────────────────────────────
-async function getAvatarDir(): Promise<string> {
-  const dir = (FileSystem.documentDirectory ?? '') + AVATAR_DIR;
+// 头像缓存按 userId 隔离：AsyncStorage key 和本地文件目录都带上 userId，
+// 否则同一台设备上切换账号时会读到上一个账号缓存的像素形象（数据串号）。
+function avatarStorageKey(userId: string): string {
+  return `${AVATAR_STORAGE_KEY}_${userId}`;
+}
+
+async function getAvatarDir(userId: string): Promise<string> {
+  const dir = (FileSystem.documentDirectory ?? '') + AVATAR_DIR + userId + '/';
   const info = await FileSystem.getInfoAsync(dir);
   if (!info.exists) await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
   return dir;
 }
 
-async function loadAvatarMap(): Promise<AvatarMap> {
+async function loadAvatarMap(userId: string): Promise<AvatarMap> {
   try {
-    const raw = await AsyncStorage.getItem(AVATAR_STORAGE_KEY);
+    const raw = await AsyncStorage.getItem(avatarStorageKey(userId));
     if (!raw) return {};
     const map: AvatarMap = JSON.parse(raw);
     // 验证文件是否仍存在
@@ -55,8 +61,8 @@ async function loadAvatarMap(): Promise<AvatarMap> {
   } catch { return {}; }
 }
 
-async function saveAvatarMap(map: AvatarMap): Promise<void> {
-  await AsyncStorage.setItem(AVATAR_STORAGE_KEY, JSON.stringify(map));
+async function saveAvatarMap(userId: string, map: AvatarMap): Promise<void> {
+  await AsyncStorage.setItem(avatarStorageKey(userId), JSON.stringify(map));
 }
 
 // ============================================================
@@ -81,8 +87,9 @@ export default function WidgetAssetGeneratorScreen({ navigation }: any) {
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
-      const map = await loadAvatarMap();
+      if (!user) return;
+      setUserId(user.id);
+      const map = await loadAvatarMap(user.id);
       setAvatarMap(map);
     })();
   }, []);
@@ -104,25 +111,23 @@ export default function WidgetAssetGeneratorScreen({ navigation }: any) {
 
   // ── AI 生成 + 保存到对应活动类型 ──
   const handleGenerate = async () => {
-    if (!sourcePhoto) return;
+    if (!sourcePhoto || !userId) return;
     setGenerating(true);
     try {
       const result = await generatePixelPet(sourcePhoto);
 
-      // 下载到永久本地存储（documentDirectory，不会被系统清理）
-      const dir = await getAvatarDir();
+      // 下载到永久本地存储（documentDirectory，不会被系统清理；按 userId 隔离目录）
+      const dir = await getAvatarDir(userId);
       const localPath = dir + `${selectedType}.jpg`;
       await FileSystem.downloadAsync(result.imageUrl, localPath);
 
       // 更新映射
       const newMap = { ...avatarMap, [selectedType]: localPath };
       setAvatarMap(newMap);
-      await saveAvatarMap(newMap);
+      await saveAvatarMap(userId, newMap);
 
       // 同时更新 Supabase（兼容旧逻辑）
-      if (userId) {
-        await updatePixelAvatarUrl(userId, result.imageUrl).catch(() => {});
-      }
+      await updatePixelAvatarUrl(userId, result.imageUrl).catch(() => {});
 
       Alert.alert(
         t('widget_manager_generate_success'),
@@ -161,10 +166,11 @@ export default function WidgetAssetGeneratorScreen({ navigation }: any) {
       { text: t('widget_manager_cancel'), style: 'cancel' },
       {
         text: t('widget_manager_action_remove'), style: 'destructive', onPress: async () => {
+          if (!userId) return;
           try { await FileSystem.deleteAsync(currentAvatar, { idempotent: true }); } catch {}
           const newMap = { ...avatarMap, [selectedType]: null };
           setAvatarMap(newMap);
-          await saveAvatarMap(newMap);
+          await saveAvatarMap(userId, newMap);
         },
       },
     ]);

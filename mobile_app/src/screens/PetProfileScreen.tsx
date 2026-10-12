@@ -125,10 +125,12 @@ export default function PetProfileScreen() {
   // 从 WidgetAssetGenerator 返回时刷新 profile + 像素图映射
   useFocusEffect(useCallback(() => {
     loadProfile();
-    AsyncStorage.getItem('companion_avatar_map')
-      .then(raw => raw ? setAvatarMap(JSON.parse(raw)) : null)
+    // 头像缓存按 userId 隔离，避免同设备切换账号时读到上一个账号的像素形象
+    if (!currentUserId) { setAvatarMap({}); return; }
+    AsyncStorage.getItem(`companion_avatar_map_${currentUserId}`)
+      .then(raw => setAvatarMap(raw ? JSON.parse(raw) : {}))
       .catch(() => {});
-  }, [loadProfile]));
+  }, [loadProfile, currentUserId]));
 
   // pixel_avatar_url 是 OpenAI 临时 URL（1小时过期）
   // 拿到后立刻下载到本地缓存，保证 Live Activity 调用时不会因 URL 过期而失败

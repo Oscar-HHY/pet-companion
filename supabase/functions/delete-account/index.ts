@@ -5,10 +5,10 @@
 //       to perform the destructive ops.
 //
 // Deletion order (Part 4.4 audit):
-//   1. Storage objects under <userId>/ in pets/avatars/memory_media buckets.
+//   1. Storage objects under <userId>/ in pets/avatars/memory_media/medical_reports buckets.
 //   2. Public tables with NO FK back to user_profiles (would orphan otherwise):
 //      pets, pet_activities, health_questionnaires, medical_records,
-//      vaccinations, weight_records.
+//      vaccinations, weight_records, ai_chat_messages, ai_conversations, ai_usage_events.
 //   3. user_profiles row — ON DELETE CASCADE cleans up: community_posts,
 //      post_comments, blocked_users, chat_messages, content_reports,
 //      friendships, memory_diaries, memory_echos, memory_videos, profile_visits.
@@ -20,9 +20,9 @@
 // Apple App Store guideline 5.1.1(v): apps offering account creation must also
 // offer in-app account deletion. This function backs that flow.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 
-const STORAGE_BUCKETS = ['pets', 'avatars', 'memory_media'];
+const STORAGE_BUCKETS = ['pets', 'avatars', 'memory_media', 'medical_reports'];
 
 // Tables with no FK back to user_profiles — must be deleted explicitly.
 const ORPHAN_TABLES = [
@@ -32,6 +32,9 @@ const ORPHAN_TABLES = [
   'medical_records',
   'vaccinations',
   'weight_records',
+  'ai_chat_messages',
+  'ai_conversations',
+  'ai_usage_events',
 ];
 
 const CORS_HEADERS = {
@@ -52,7 +55,7 @@ function json(body: unknown, status = 200) {
 // fully cleaned up (one upload of multi-frame Memory videos can blow past
 // the default 100-row Supabase limit fast).
 async function listAllUnder(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient,
   bucket: string,
   prefix: string,
 ): Promise<string[]> {

@@ -1,6 +1,6 @@
 # Pet Companion — Privacy Policy
 
-**Effective date:** May 25, 2026
+**Effective date:** October 12, 2026
 **Contact:** bei.chen725@gmail.com
 
 This Privacy Policy explains what information Pet Companion ("the App", "we") collects, how we use it, and what choices you have.
@@ -13,7 +13,8 @@ This Privacy Policy explains what information Pet Companion ("the App", "we") co
 - **Account**: email address and password (password is stored only as a one-way hash by our authentication provider).
 - **Profile**: nickname, profile picture (avatar), optional contact information, optional public email, automatically generated public handle (e.g. `pet_abc12345`).
 - **Pet information**: pet name, species/breed, photo, status (idle / eating / sleeping etc.).
-- **Health records you choose to enter**: symptom questionnaires, medical visit notes (clinic, diagnosis, treatment, medications, notes), vaccination records (date, dose number, next-due date), weight records.
+- **Health records you choose to enter**: symptom questionnaires, medical visit notes (clinic, visit date, diagnosis, treatment, medications, notes), photos of medical reports / lab sheets you choose to upload and the text read from them, vaccination records (vaccine name, date, dose number, next-due date), weight records.
+- **AI Pet Assistant**: the questions you ask the assistant and its answers (chat history), and a count of how many AI requests you made (for daily usage limits).
 - **Companion activity logs**: when you start/stop a walk, bath, or playtime session — including duration in seconds.
 - **Memory content**: diaries, photos, videos, and voice recordings ("memory echos") you upload.
 - **Community content**: posts, comments, and chat messages you send to other users.
@@ -42,6 +43,7 @@ We use the information above only to:
 - Display your profile, pets, health records, and memories to you
 - Deliver messages, friend requests, and notifications between you and other users you have explicitly connected with
 - Generate a 2D pixel-art avatar for your pet (see Section 4 — third-party AI processing)
+- Read medical report photos you upload to pre-fill a medical record, and answer your questions in the AI Pet Assistant (see Section 4 — third-party AI processing; only after you agree in the App)
 - Send local reminders for vaccinations you scheduled
 - Moderate content reported by users (review and act on community reports)
 - Comply with legal obligations (e.g., responding to lawful requests)
@@ -66,6 +68,7 @@ Pet Companion relies on a small number of trusted service providers:
 |---|---|---|
 | **Supabase** (database, authentication, file storage, real-time messaging — hosted in Seoul, South Korea) | All data described in Section 1.1 and 1.2 | Stores and serves your data |
 | **Volcengine Doubao Seedream API** (image generation) | A single pet photo you choose to send when generating a pixel-art avatar, along with the prompt text | Generates the pixel-art avatar image |
+| **Volcengine Ark** (large language model API) | When you use the AI Pet Assistant: your question, recent chat history, pet profile, health records (incl. text read from report photos), activity log, Memory Palace diary text and video/voice titles. When you upload a medical report photo: that photo | Generates assistant answers; reads report photos to pre-fill medical records. Used only after you agree in the App |
 | **Apple** | Your app installation (the App is distributed via the Apple App Store); local notifications run through iOS system frameworks | App distribution and on-device notifications |
 
 We do not share your data with any other third party. We do not transfer your data to advertisers or data brokers.
@@ -85,12 +88,14 @@ We do not share your data with any other third party. We do not transfer your da
 ## 6. Data retention and deletion
 
 - We retain your data for as long as your account exists.
+- You can delete any AI Pet Assistant conversation (and its messages) at any time from the conversation list on the assistant screen.
 - You can delete your account at any time from inside the App: **Me → Delete Account**. This will permanently remove:
   - Your authentication account
   - Your profile and all the data described in Section 1.1
   - All photos, videos, audio, and media you uploaded
   - All comments and posts you authored
   - All chat messages you sent or received
+  - Your AI Pet Assistant chat history and medical report photos
   - All friendships, block records, and visit history
 - Content reports you submitted about other users are retained for moderation purposes.
 - Account deletion is **irreversible**.
@@ -118,7 +123,7 @@ Pet Companion is not directed to children under 13 (or the equivalent minimum ag
 
 ## 9. International data transfers
 
-Our backend (Supabase) is hosted in South Korea. The Seedream image-generation API is operated from China. If you use Pet Companion from outside these regions, your data will be transferred to and processed in these countries. By using the App, you consent to this transfer.
+Our backend (Supabase) is hosted in South Korea. The Seedream image-generation API and the Volcengine Ark AI API are operated from China. If you use Pet Companion from outside these regions, your data will be transferred to and processed in these countries. By using the App, you consent to this transfer.
 
 ---
 
@@ -136,7 +141,7 @@ For any privacy question or request, email **bei.chen725@gmail.com**.
 
 # 宠物伴侣 — 隐私政策
 
-**生效日期：** 2026 年 5 月 25 日
+**生效日期：** 2026 年 10 月 10 日
 **联系方式：** bei.chen725@gmail.com
 
 本隐私政策解释「宠物伴侣」（以下简称"本应用"、"我们"）会收集哪些信息、如何使用，以及您拥有哪些权利。
@@ -149,7 +154,8 @@ For any privacy question or request, email **bei.chen725@gmail.com**.
 - **账号**：邮箱与密码（密码仅以单向哈希形式由我们的认证服务存储）。
 - **个人资料**：昵称、头像、可选联系方式、可选公开邮箱、自动生成的公开搜索 ID（如 `pet_abc12345`）。
 - **宠物信息**：宠物名称、品种、照片、当前状态（待机 / 进食 / 睡眠等）。
-- **您自行录入的健康记录**：症状问卷、就医记录（医院、诊断、治疗方案、用药、备注）、疫苗记录（接种日期、剂次、下次到期日）、体重记录。
+- **您自行录入的健康记录**：症状问卷、就医记录（医院、就诊日期、诊断、治疗方案、用药、备注）、您选择上传的病历 / 化验单照片及从中识别出的文字、疫苗记录（疫苗名称、接种日期、剂次、下次到期日）、体重记录。
+- **AI 宠物助手**：您向助手提出的问题及其回答（聊天记录），以及您的 AI 请求次数（用于每日用量限制）。
 - **陪伴活动日志**：散步 / 洗澡 / 陪玩的开始 / 结束时间及时长（秒）。
 - **回忆内容**：您上传的日记、照片、视频和语音（"回忆回响"）。
 - **社区内容**：您发送的帖子、评论、聊天消息。
@@ -178,6 +184,7 @@ For any privacy question or request, email **bei.chen725@gmail.com**.
 - 在应用内展示您的资料、宠物、健康记录与回忆
 - 在您主动连接的好友之间传递消息、好友请求与通知
 - 为您的宠物生成 2D 像素头像（详见第 4 节 — 第三方 AI 处理）
+- 识别您上传的病历照片以预填就医记录，并在「AI 宠物助手」中回答您的问题（详见第 4 节 — 第三方 AI 处理；仅在您于 App 内同意后使用）
 - 发送您自己安排的本地疫苗提醒
 - 处理用户举报（审核并对被举报内容采取行动）
 - 遵守法律义务（例如响应合法的法律请求）
@@ -202,6 +209,7 @@ For any privacy question or request, email **bei.chen725@gmail.com**.
 |---|---|---|
 | **Supabase**（数据库、认证、文件存储、实时消息 — 服务器位于韩国首尔） | 第 1.1 与 1.2 节描述的所有数据 | 数据存储与服务 |
 | **Volcengine 豆包 Seedream API**（图像生成） | 您在生成像素头像时选择上传的单张宠物照片及提示词文本 | 生成像素头像图片 |
+| **火山引擎 · 方舟**（大模型 API） | 使用 AI 宠物助手时：您的提问、近期聊天记录、宠物档案、健康记录（含病历照片识别出的文字）、活动日志、记忆殿堂日记正文及视频 / 声音标题；上传病历照片时：该照片 | 生成助手回答；识别病历照片以预填就医记录。仅在您于 App 内同意后使用 |
 | **Apple** | App 通过 App Store 分发；本地通知通过 iOS 系统框架运行 | App 分发与设备端通知 |
 
 我们不会与任何其他第三方共享您的数据，也不会将您的数据传输给广告商或数据经纪人。
@@ -221,12 +229,14 @@ For any privacy question or request, email **bei.chen725@gmail.com**.
 ## 6. 数据保留与删除
 
 - 在账号存在期间，我们会保留您的数据。
+- 您可以随时在 AI 宠物助手页面清空聊天记录。
 - 您可以随时在 App 内删除账号：**我的 → 删除账号**。删除将永久移除：
   - 您的认证账号
   - 您的个人资料以及第 1.1 节描述的所有数据
   - 您上传的所有照片、视频、音频和媒体
   - 您撰写的所有帖子和评论
   - 您发送或接收的所有聊天消息
+  - 您的 AI 宠物助手聊天记录与病历照片
   - 所有好友关系、屏蔽记录、访问历史
 - 您对其他用户提交的举报会保留以用于审核目的。
 - 账号删除**不可恢复**。
@@ -254,7 +264,7 @@ For any privacy question or request, email **bei.chen725@gmail.com**.
 
 ## 9. 跨境数据传输
 
-我们的后端（Supabase）位于韩国。Seedream 图像生成 API 由中国境内运营。如果您从其他地区使用宠物伴侣，您的数据会被传输到上述国家进行处理。继续使用本应用即视为您同意此项传输。
+我们的后端（Supabase）位于韩国。Seedream 图像生成 API 与火山引擎方舟 AI API 由中国境内运营。如果您从其他地区使用宠物伴侣，您的数据会被传输到上述国家进行处理。继续使用本应用即视为您同意此项传输。
 
 ---
 

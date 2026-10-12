@@ -44,6 +44,9 @@ export interface MedicalRecord {
   treatment: string;
   medications: string;
   notes: string;
+  visit_date?: string | null;          // YYYY-MM-DD
+  report_image_paths?: string[];       // object paths in the private `medical_reports` bucket
+  report_ocr_text?: string | null;     // full text extracted from the report photos
   created_at?: string;
   updated_at?: string;
 }
@@ -52,6 +55,7 @@ export interface Vaccination {
   id?: string;
   user_id: string;
   vaccine_date: string;   // DB column: vaccine_date
+  vaccine_name?: string | null;
   dose_number: string;
   next_due_date: string;
   reminder_notification_id?: string | null;
@@ -248,6 +252,46 @@ export async function updateMedicalRecord(
     .single();
   if (error) throw new Error(`更新医疗记录失败: ${error.message}`);
   return data as MedicalRecord;
+}
+
+/**
+ * Uploads a vet report / lab-sheet photo to the private `medical_reports` bucket.
+ * Returns the object PATH (not a signed URL — those expire); use
+ * getMedicalReportImageUrl() to display it.
+ */
+export async function uploadMedicalReportImage(userId: string, imageUri: string): Promise<string> {
+  const ext = (imageUri.split('.').pop() || 'jpg').toLowerCase();
+  const fileName = `${userId}/report_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
+  const binaryStr = atob(base64);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+
+  const mimeMap: Record<string, string> = {
+    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', heic: 'image/heic',
+  };
+  const { error } = await supabase.storage
+    .from('medical_reports')
+    .upload(fileName, bytes.buffer, { contentType: mimeMap[ext] || 'image/jpeg' });
+  if (error) throw new Error(`病历图片上传失败: ${error.message}`);
+  return fileName;
+}
+
+export async function getMedicalReportImageUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from('medical_reports')
+    .createSignedUrl(path, 60 * 60);
+  if (error) throw new Error(`获取病历图片失败: ${error.message}`);
+  return data.signedUrl;
+}
+
+export async function deleteMedicalReportImages(paths: string[]): Promise<void> {
+  if (paths.length === 0) return;
+  const { error } = await supabase.storage.from('medical_reports').remove(paths);
+  if (error) throw new Error(`删除病历图片失败: ${error.message}`);
 }
 
 export async function getMedicalRecords(userId: string): Promise<MedicalRecord[]> {

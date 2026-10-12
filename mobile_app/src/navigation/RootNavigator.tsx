@@ -15,6 +15,7 @@ import PetProfileScreen from '../screens/PetProfileScreen';
 import ChatDetailScreen from '../screens/ChatDetailScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AboutScreen from '../screens/AboutScreen';
+import PetAssistantScreen from '../screens/PetAssistantScreen';
 import { supabase } from '../services/supabaseClient';
 import { colors } from '../theme/colors';
 import EulaGate from '../components/EulaGate';
@@ -27,6 +28,7 @@ export type RootStackParamList = {
   WidgetAssetGenerator: undefined;
   Settings: undefined;
   About: undefined;
+  PetAssistant: undefined;
   /** Stack screen for viewing OTHER users' profiles (on top of tabs) */
   UserProfileView: { targetUserId: string };
   /** Stack screen for viewing OTHER users' pets (on top of tabs) */
@@ -85,6 +87,7 @@ export default function RootNavigator() {
             <Stack.Screen name="WidgetAssetGenerator" component={WidgetAssetGeneratorScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="About" component={AboutScreen} />
+            <Stack.Screen name="PetAssistant" component={PetAssistantScreen} />
             <Stack.Screen name="UserProfileView" component={UserProfileScreen} />
             <Stack.Screen name="PetProfileView" component={PetProfileScreen} />
             <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />

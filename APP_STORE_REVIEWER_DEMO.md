@@ -40,9 +40,21 @@ In the Supabase Dashboard:
 Write the two UUIDs down here for later:
 
 ```
-REVIEWER_1_UUID = <paste-here>
-REVIEWER_2_UUID = <paste-here>
+REVIEWER_1_UUID = 0ed1480c-428f-42c6-bc37-e2230fa567ea   # bei.chen725+reviewer1@gmail.com
+REVIEWER_2_UUID = 5b9af0f9-4873-4c03-abc1-94945d5ba7ff   # bei.chen725+reviewer2@gmail.com
 ```
+
+> **STATUS (2026-05-29): Steps 1 & 2 DONE.** Both auth users were created directly in
+> Postgres (bcrypt password via `extensions.crypt`, `email_confirmed_at` set, matching
+> `auth.identities` rows) and **password sign-in was verified against the auth API for
+> both accounts**. The seed in Step 2 was run with the UUIDs above and verified
+> (2 user_profiles, 2 pets, 3 vaccinations, 3 weight_records, 1 medical_record,
+> 1 memory_diary, 2 community_posts, 1 friendship, 3 chat_messages). The reviewer
+> password is NOT stored in this public file — keep it in your own notes / 1Password.
+> NOTE: the seed in Step 2 below still shows the original `id`-column inserts; the live
+> run dropped `id` for the bigint-identity tables (vaccinations, weight_records,
+> medical_records, community_posts) and cast vaccine dates to `timestamptz` — see the
+> session notes if you need to re-run it.
 
 ---
 

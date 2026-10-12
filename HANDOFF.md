@@ -1,25 +1,98 @@
-# Pet Companion — App Store Launch Prep Handoff
+# Pet Companion (萌宠无忧) — Handoff
 
-**Last updated:** 2026-05-28 (session 9)
-**Status:** **Mid App Store Connect submission.** This session: renamed the app to **萌宠无忧** (zh primary) / **Pet Companion: Care & Memory** (en secondary, the bare "Pet Companion" was taken), made the app **iPhone-only**, created the App Store Connect record (zh-Hans primary, SKU/age-rating/pricing/privacy-labels done by user), and fixed **two App Store rejection risks** (dead "share pet" button + community "coming soon" share alert) plus one **RLS bug** (friends' pet profiles were invisible — migration applied to prod). **Currently blocked on:** capturing App Store screenshots from the **iPhone 17 Pro Max simulator** (Metro is running in background). **Next: finish screenshots → native rebuild → production build/upload (Phase F).**
+**Last updated:** 2026-10-13 (sessions 13–14)
+**Status:** v1.0.0 (build 3) is **LIVE on the App Store** since 2026-06-02 (non-mainland regions). **v1.1.0 (build 4) is code-complete, reviewed, committed locally — BLOCKED on Apple Developer identity verification** (can't accept the new Program License Agreement → Xcode can't sign → can't archive/upload). Backend for v1.1 (DB migrations + 3 edge functions) is **already live in production** and is backward-compatible with the v1.0.0 app.
+
+**Next step:** user resolves Apple ID verification (see Blocker below) → tell Claude → Claude archives build 4 → TestFlight on device → App Store Connect submission (step list under "Release checklist").
 
 ---
 
 ## How to resume next session
 
-In a new Claude Code session, `cd /Users/poutine./Desktop/Pet_Companionship` then say:
+In Claude Code: `cd ~/Desktop/Pet_Companionship` (this Mac: `/Users/chaojiwudibawangxiaopengyou/Desktop/Pet_Companionship`), then:
 
 > "Read `HANDOFF.md` and continue from where we left off."
 
-The Supabase CLI is already installed, authenticated, and linked to project `pzozanrirwjnlrgvqlzj` (Seoul). Claude can run migrations + deploy Edge Functions via the pooler URL (psql full path `/opt/homebrew/opt/libpq/bin/psql`, `psql` is NOT on PATH).
+- **Supabase**: use the Supabase MCP tools (`apply_migration`, `execute_sql`, `get_advisors`, `deploy_edge_function`, `get_logs`). **The supabase CLI is NOT installed on this Mac.** Edge functions are deployed via MCP `deploy_edge_function` with files `<fn>/index.ts` + `_shared/{ai,auth,usage}.ts`, `verify_jwt: true`.
+- **Deno type-check** (no global deno): `~/.npm/_npx/7eac5a3a53225c60/node_modules/@deno/darwin-arm64/deno check supabase/functions/<fn>/index.ts`
+- **Workflow (user preference)**: Claude writes specs/migrations and reviews; **Codex implements code** via `codex exec -s workspace-write -C ~/Desktop/Pet_Companionship -o <result.md> - < <task.md>` (codex at `~/.npm-global/bin/codex`).
+- **Simulator**: iPhone 17 (`E40E03D2-D13A-489F-945D-F9586AD1FA18`); Metro: `cd mobile_app && npx expo start --clear --port 8081`.
+- **Credentials not in git**: reviewer password is in `HANDOFF.secrets.local.md` (gitignored, local only).
 
-⚠ **Project lives at `/Users/poutine./Desktop/Pet_Companionship`** (moved from `Downloads/` between sessions 7 and 8). Recurring symptom: a `ConfigError` referencing the old `/Downloads/...` path = a stale Metro pinned to the old location — kill it and restart Metro from the Desktop path.
+---
 
-⚠ **Everything is UNCOMMITTED.** The only git commit is the initial `f597e45`. All 9 sessions' source/function/config changes sit in the working tree, never committed. Run `git status` to see them. The public repo `Oscar-HHY/pet-companion` does NOT contain any of these fixes.
+## ⛔ Blocker: Apple Developer identity verification (2026-10-12)
 
-**Available project skills:**
-- `conclusion` — regenerate this HANDOFF.md (trigger: "conclusion", "总结", "wrap up")
-- `code-check` — full architect-style code review of the session's changes (trigger: "check codes", "code review", "代码审查")
+- Archive fails with *"PLA Update available … agree to the latest Program License Agreement"*. Agreeing (Apple Developer app) shows **"Developer requires ID Verification"**.
+- developer.apple.com/account banner: *请验证你的身份并查阅最新版许可协议 … 通过 Apple Developer App 验证身份*. Apple's doc: Developer app → 账户 → 使用开发者 Apple 账户登录 → **验证身份** (姓名/身份证号/电话 + 自拍, run by CFCA for mainland China). Requires the same device throughout, 2FA, iCloud signed in, latest app.
+- **User checked iPhone + Mac Developer app: no 验证身份 entry.** → Must go through **Apple Developer Support**: developer.apple.com/contact → 会员资格与帐号 → 其他会员资格或帐号问题. Phone callback (only during business hours) is fastest; email form was filled with a bilingual description (Team ID HW5J57WXQ8, Apple ID `1207252615@qq.com`) but **not confirmed sent**.
+- Live v1.0.0 is unaffected. Nothing else can proceed on the release until this is resolved.
+- Also done this session: **Xcode had no Apple account signed in** (archive error "No Accounts") — user signed in via Xcode → Settings → Accounts. Should persist now.
+
+---
+
+## v1.1.0 — what shipped in code (sessions 13–14, 2026-10-10 → 10-13)
+
+### Features
+1. **AI 宠物助手 (Pet Assistant)** — `PetAssistantScreen.tsx` + `PetAssistantService.ts`, entry from drawer. ChatGPT-style:
+   - Opens on a new empty chat; left slide-in panel (80% width) lists conversations (newest first), delete with confirm; header "new chat" button.
+   - Per-user consent screen before first use (AsyncStorage `ai_assistant_consent_${userId}`).
+   - Edge function **`pet-assistant-chat`** (v6): request `{message, tz?, conversation_id?}` → `{reply, remaining, conversation_id, title}`. Loads ALL the caller's records with their JWT (RLS): pet, health questionnaires, medical records incl. OCR text, vaccinations, weights, 90-day activities, Memory Palace diaries (30k-char budget) + video/voice titles. History = last 10 messages of that conversation. Conversation created only after a successful answer; title = first 30 chars of the first question. Limit **30 answers / rolling 24h**.
+2. **病历拍照识别 (Medical report OCR)** — HealthScreen medical-record modal: upload up to 6 photos → edge function **`extract-medical-report`** (v7) → pre-fills clinic/date/diagnosis/treatment/meds/notes (never overwrites typed input) and stores full `report_ocr_text` on the record (that's what the assistant reads). **Explicit per-user consent Alert before first OCR** (AsyncStorage `ai_ocr_consent_${userId}`) — App Store 5.1.2(i). Limit **20 / 24h**. Photos in private bucket `medical_reports/${userId}/…`; removed photos / cancelled uploads / deleted records clean up their files.
+3. Medical records gained `visit_date`; vaccinations gained `vaccine_name` (both in UI).
+4. **delete-account** (v8) also wipes `ai_chat_messages`, `ai_conversations`, `ai_usage_events`, and the `medical_reports` bucket.
+
+### AI provider (all via secrets, switchable without an app release)
+- **Volcengine Ark Beijing** — `AI_BASE_URL=https://ark.cn-beijing.volces.com/api/v3`, `AI_CHAT_MODEL` = `AI_VISION_MODEL` = `doubao-seed-2-1-lite-260915`, **one shared `AI_API_KEY`** (falls back to `SEEDREAM_API_KEY`). No separate key needed for OCR vs chat.
+- `_shared/ai.ts` → `chatCompletionStream()` (only client): SSE streaming, `thinking: {type:'disabled'}` (sent only to volces.com hosts), 120 s timeout, logs one line per call: `[ai:<chat|ocr>] outcome=… headers_ms=… first_content_ms=… total_ms=… usage=…` — **read this in edge-function logs first when AI fails.**
+- **Latency lessons (Seoul → Beijing):** (a) never send images as base64 — a 2.7 MB PNG body got no response in 120 s; images now go as **10-min signed URLs** that Ark downloads (OCR ≈ 19 s). (b) Doubao Seed has **deep thinking ON by default** → chat timed out at 60 s once records grew; disabled → answers in seconds.
+
+### DB migrations (all applied to prod via MCP, files in `supabase/migrations/`)
+| File | What |
+|---|---|
+| `20261010000000_pet_assistant.sql` | `ai_chat_messages`, `ai_usage_events` (RLS on, no policies = service-role only), `medical_reports` bucket + owner-folder policies, `medical_records.visit_date/report_image_paths/report_ocr_text`, `vaccinations.vaccine_name` |
+| `20261011000000_ai_tables_service_role_grants.sql` | grants for service_role on AI tables |
+| `20261011010000_ai_conversations.sql` | `ai_conversations` (owner RLS); `ai_chat_messages.conversation_id` NOT NULL FK ON DELETE CASCADE; insert policy requires owning the conversation |
+| `20261013000000_lock_down_report_view_and_drop_dead_fn.sql` | **Security fix**: `content_reports_with_content` (SECURITY DEFINER moderation view exposing reporter names + reported private chat text) was SELECT-able by every signed-in user → revoked from anon/authenticated (dashboard/postgres still works). Dropped unused + broken `mark_messages_as_read` (ambiguous `sender_id = sender_id`). |
+
+### Review pass (session 14) — results
+- `tsc --noEmit` ✅, `deno check` on all 3 changed functions ✅ (fixed a pre-existing type error in `delete-account` `listAllUnder` param), no `console.log` in app src.
+- Fixed: OCR had no explicit consent (compliance); unused non-streaming `chatCompletion` removed; malformed SSE chunk no longer turns into a 500.
+- Tried adding `expo-image-manipulator` (downscale report photos to 2048 px) — **reverted** because **CocoaPods is not installed on this Mac** (and system Ruby 2.6 is too old for CocoaPods 1.16 deps). Picker `quality: 0.7` JPEG keeps typical photos ~2–5 MB, under the 8 MB OCR limit. Adding any new native module later needs CocoaPods (→ Homebrew + newer Ruby first).
+- Deployed functions verified identical to local files.
+
+---
+
+## Release checklist for v1.1.0 (after the blocker clears)
+
+1. ✅ Version bumped: `MARKETING_VERSION 1.1.0` / build **4** (pbxproj ×4 + hardcoded `Info.plist CFBundleVersion` + `app.json version`).
+2. ✅ `PRIVACY.md` updated (per-conversation delete, effective 2026-10-12). ⚠ The **live policy URL is a different repo** — `https://oscar-hhy.github.io/pet-companion-privacy/` → copy the updated text there too (pushing this repo alone does NOT update it).
+3. ✅ Committed locally on `main` (not pushed). **Push to `origin` (public GitHub) only after the user OKs it.**
+4. Archive (command below) → Organizer → Distribute → App Store Connect → Upload.
+5. TestFlight on the user's iPhone: AI assistant (new/switch/delete chat; ask about 萌爪动物医院 record), real camera-photo OCR (incl. consent alert), quick regression (login, post, pet profile).
+6. App Store Connect: create version **1.1.0**, select build 4, "What's New" (新增 AI 宠物助手、病历拍照识别), update **App Privacy** (confirm Photos / Health / Other User Content cover report photos + AI chat; data is sent to Volcengine Ark for processing), App Review notes: where the AI features are + that consent is asked first; reviewer1 account has seed data.
+7. Submit → after approval **user clicks Release** (manual release).
+
+### Production archive command
+```
+cd mobile_app/ios
+rm -rf build/mobileapp.xcarchive
+xcodebuild -workspace mobileapp.xcworkspace -scheme mobileapp -configuration Release \
+  -destination 'generic/platform=iOS' -archivePath "$PWD/build/mobileapp.xcarchive" \
+  -allowProvisioningUpdates archive
+open build/mobileapp.xcarchive   # Organizer → Distribute App → App Store Connect → Upload
+```
+"Upload Symbols Failed" warnings for React/Hermes/ReactNativeDependencies are benign.
+
+### ⚠ Build-number gotcha
+Main app `ios/mobileapp/Info.plist` **hardcodes `CFBundleVersion`**; the Live Activity extension uses `$(CURRENT_PROJECT_VERSION)`. Bump BOTH:
+1. `sed -i '' 's/CURRENT_PROJECT_VERSION = N;/CURRENT_PROJECT_VERSION = N+1;/g' ios/mobileapp.xcodeproj/project.pbxproj`
+2. `/usr/libexec/PlistBuddy -c "Set :CFBundleVersion N+1" ios/mobileapp/Info.plist`
+
+### ⚠ Xcode signing gotchas
+- "Personal Team is not enrolled" → Xcode cached pre-enrollment state: ⌘Q Xcode and reopen.
+- "No Accounts" → sign in at Xcode → Settings → Accounts.
+- "PLA Update available" → accept the new agreement at developer.apple.com (currently blocked by ID verification, see above).
 
 ---
 
@@ -27,194 +100,48 @@ The Supabase CLI is already installed, authenticated, and linked to project `pzo
 
 | Topic | Choice |
 |---|---|
-| Bundle ID | `com.beichen.petcompanion` (iOS + Android) |
-| Live Activity extension Bundle ID | `com.beichen.petcompanion.CompanionLiveActivityExtension` |
-| **App Store name (zh-Hans, PRIMARY)** | **萌宠无忧** (session 9 — supersedes old 宠物伴侣) |
-| **App Store name (en-US, secondary)** | **Pet Companion: Care & Memory** (session 9 — bare "Pet Companion" was already taken on the App Store; names are globally unique) |
-| **App Store Connect Primary Language** | **Simplified Chinese (zh-Hans)** (session 9 — English is secondary localization) |
-| **On-device display name (CFBundleDisplayName)** | **萌宠无忧** (session 9 — `ios/mobileapp/Info.plist` + `app.json` `expo.name`; single value, shows on all devices regardless of system language; **requires native rebuild to take effect**) |
-| Internal slug / CFBundleName | `petcompanion` / `$(PRODUCT_NAME)` = `mobileapp` (internal, unchanged) |
-| Xcode project / target name | **`ios/mobileapp.xcodeproj`**, target `mobileapp`. Workspace: `ios/mobileapp.xcworkspace`. |
-| **Device support** | **iPhone-only** (session 9): `app.json` `supportsTablet: false` + `TARGETED_DEVICE_FAMILY = "1"` (4 build configs). Reason: skip iPad screenshots + iPad review for a faster v1; can add iPad in a later update. **Requires native rebuild.** |
-| App ID capabilities to enable | **NONE.** Entitlements file is empty `<dict/>`. Local notifications only, Live Activity via `NSSupportsLiveActivities` Info.plist key, Supabase auth. In-App Purchase + Game Center show pre-checked/greyed (Apple defaults) — leave them. |
-| App IDs registered | Both already existed on developer.apple.com (Xcode automatic signing auto-created them). Registering again throws "An App ID with Identifier '…' is not available" — that's expected, just confirm they're in the Identifiers list. |
-| **Age Rating** | **13+** (session 9, via Apple's NEW multi-step questionnaire). Answers: UGC=Yes, Messaging=Yes, Advertising=No, Parental Controls=No, Age Assurance=No, Unrestricted Web=No, Loot Boxes=No, Health/Wellness Topics=No, all violence/sexual/gambling=None/No. Override = Not Applicable. |
-| **App Store Connect SKU / User Access** | SKU `petcompanion-001` (internal, permanent, never shown). User Access = **Full Access** (correct for a solo developer). |
-| **ASC Version number** | **`1.0.0`** (must match the build's `CFBundleShortVersionString` / `MARKETING_VERSION = 1.0.0`; do NOT use "1.0"). |
-| **Copyright** | `2026 Hengyu He` (the name on the Apple Developer account; or user's legal name). |
-| **Description field char rule** | App Store Connect Description **rejects `✓` (U+2713, Dingbats block)** → "invalid characters". Use **`•` (U+2022)** and `—` (em dash) which are General Punctuation and accepted. All `✓` in `APP_STORE_LISTING.md` were swapped to `•`. |
-| Keywords (ZH) | `宠物,猫狗,健康记录,疫苗提醒,体检,像素,头像生成,记忆相册,日记,陪伴,养宠,小动物,新手,称重,笔记,双语` (56 chars). Removed `萌宠` (now in App Name 萌宠无忧, auto-indexed); added `宠物` (no longer in name). |
-| Keywords (EN) | `dog,cat,puppy,kitten,health,tracker,vaccination,reminder,avatar,weight,diary,bilingual,pixel,walks` (98 chars). Removed `care`+`memory` (now in en App Name); added `pixel`+`walks`. |
-| Dark mode | Follows system; users can override in Settings |
-| `user_profiles` schema | Has `email` + `contact_info` columns |
-| Workflow | Batch fixes, pause for user review between Parts |
-| Privacy Policy URL | **`https://oscar-hhy.github.io/pet-companion-privacy/`** — live; wired into `AboutScreen.tsx` |
-| EULA URL | Apple standard `https://www.apple.com/legal/internet-services/itunes/dev/stdeula/` |
-| MARKETING_VERSION / build # | `1.0.0` / `1` (both targets must match; bump build # per re-upload) |
-| Apple Developer Program | **APPROVED 2026-05-28**, Individual / Sole Proprietor. Apple ID `1207252615@qq.com`. Account name **Hengyu He**, team `HW5J57WXQ8`. |
-| iOS dev signing team | `HW5J57WXQ8` (Personal Team). Use the team ID in `DEVELOPMENT_TEAM` (4 build configs). |
-| pbxproj `objectVersion` | `77` (Xcode 16 format — required by CocoaPods 1.16.2's xcodeproj 1.27.0). **Do not change.** |
-| **Screenshot capture device** | **iPhone 17 Pro Max simulator** (machine runs iOS 26, so there is NO iPhone 16 Pro Max sim; the 17 Pro Max is also 6.9″ → exactly **1320×2868**, the required size). The physical iPhone 16 is 6.1″ (1179×2556) → WRONG size, can't use it for screenshots. |
-| Test iPhone (physical) | `超级无敌霸王小朋友` (iPhone 16, model `iPhone17,3`). UDID `82B5CE3B-3ABA-5057-98FB-164EC83662CC`. Use the Chinese name with `expo run:ios --device`. ⚠ `devicectl` is broken on macOS 26 ("Unexpected devicectl JSON version output") — affects PHYSICAL device connection only, not simulators. |
-| Report reason values in DB | Stable i18n keys (`report_reason_spam` etc.), NOT localized labels. |
-| GitHub repo | **Public** at `https://github.com/Oscar-HHY/pet-companion`. Initial commit `f597e45` on `main`. |
-| License | MIT |
-| Reviewer demo accounts | `bei.chen725+reviewer1@gmail.com` / `bei.chen725+reviewer2@gmail.com`, both password `<REVIEWER_PASSWORD>`. Pre-seed via SQL in `APP_STORE_REVIEWER_DEMO.md`. |
-| `community_posts` reaction schema | `hugs_users text[]` + `tissues_users text[]` (arrays of user IDs; count = `.length`). |
-| `pets` table PK | `user_id` (one pet per user; upsert `onConflict: 'user_id'`). No `id` column. |
-| **`pets` RLS (session 9)** | SELECT is now **`USING (true)`** for authenticated (any logged-in user can view any pet profile — social surface). INSERT/UPDATE/DELETE stay owner-only (`auth.uid() = user_id`). |
-| Edge Function: `generate-pixel-pet` response | `{ imageUrl }` only — `prompt` intentionally dropped (don't leak the safety prefix). |
-| Vaccination reminder fire time | 9:00 AM local time on the next-due date. |
-| App Store Support URL | `https://github.com/Oscar-HHY/pet-companion/issues` — **Issues must be enabled on the repo before submission** (default off). |
-| Pet health data privacy label | Health & Fitness → Health. |
-| Share feature | **Deferred to v1.1.** Both entry points (pet-profile + community) were unfinished and hidden in session 9 — see below. |
+| Bundle ID | `com.beichen.petcompanion` (+ `.CompanionLiveActivityExtension`) |
+| App Store name | zh-Hans (primary) **萌宠无忧** · en-US **Pet Companion: Care & Memory** |
+| Device support | iPhone-only |
+| Xcode | `ios/mobileapp.xcworkspace`, scheme `mobileapp`, Automatic signing, `DEVELOPMENT_TEAM=HW5J57WXQ8` |
+| Apple Developer Program | Individual, Team `HW5J57WXQ8`, Apple ID `1207252615@qq.com`, renews 2027-05-29 |
+| Release mode | **Manual release** |
+| Age rating / price | 13+ / Free |
+| Privacy Policy URL | `https://oscar-hhy.github.io/pet-companion-privacy/` (separate repo) |
+| Support | in-app `somethingimportant002@gmail.com`; App Store Support URL = GitHub Issues of `Oscar-HHY/pet-companion` |
+| Reviewer accounts | `bei.chen725+reviewer1@gmail.com`, `+reviewer2@gmail.com` (password in `HANDOFF.secrets.local.md`; `<REVIEWER_PASSWORD>` placeholder in committed docs). UUIDs `0ed1480c-428f-42c6-bc37-e2230fa567ea` / `5b9af0f9-4873-4c03-abc1-94945d5ba7ff` |
+| Supabase | project `pzozanrirwjnlrgvqlzj`, AWS Seoul, Postgres 17, **Free plan** |
+| RLS | `pets`/`pet_activities` SELECT public to authenticated, writes owner-only; health/medical/vaccine/weight/memory/AI tables owner-only; `ai_usage_events` service-role only |
+| `pets` | one pet per user (`UNIQUE(user_id)`, upsert on `user_id`) |
+| Storage | `pets`, `avatars` public; `memory_media`, `medical_reports` private (signed URLs); paths `${userId}/…`, owner-folder-scoped writes |
+| AI | Volcengine Ark (see above); data leaves Seoul to Beijing for AI processing — disclosed in-app + PRIVACY.md §4 |
+| Mainland China App Store | **Not pursued** — needs ICP备案 + App备案 + mainland backend (PIPL). Est. cost if ever: Aliyun 2C4G ≈ ¥199–298/yr (+ RDS ≈ ¥228/yr); the real work is migrating ~19 files / ~98 `.from()` calls / auth / storage / realtime / 4 edge functions; ICP may need a company entity. Recommendation: stay on Supabase; if migrating, self-host Supabase on a CN cloud. |
 
 ---
 
-## ✅ Parts 1–7 + sessions 6–8 (DONE — see prior HANDOFF revisions)
-In-code fixes, Apple compliance UI, compliance/grants/pet_activities/chat-realtime/vaccination-reminder migrations, dev client on physical iPhone, both Edge Functions, RLS sweep, realtime + chat read-state, vaccination reminders, code-check sweep, launch-copy bug fixes, Apple approval + App ID guidance + Metro stale-path fix.
+## Open items (non-blocking, cumulative)
 
-## ✅ Session 9 — naming, iPhone-only, App Store Connect record, 2 rejection-risk fixes + 1 RLS bug (DONE)
-
-| Item | What happened |
-|---|---|
-| Code verification | `npx tsc --noEmit` exit 0. Reviewed 6 uncommitted source/function diffs (badge dual friendship subscription, chat mark-read guard, SeedreamAPI prompt drop, notifications iOS-only denial check, delete-account storage pagination, generate-pixel-pet prompt omission) — all sound, no dangling refs. Still uncommitted. No automated tests exist; full functional test requires the device/TestFlight. |
-| App name → 萌宠无忧 | `APP_STORE_LISTING.md` rewritten: zh-Hans now PRIMARY (section reordered), name 萌宠无忧, descriptions updated, keyword logic flipped (see Decisions). On-device: `ios/mobileapp/Info.plist` `CFBundleDisplayName` + `app.json` `expo.name` → 萌宠无忧. |
-| English name conflict | "Pet Companion" already taken on App Store → en name is now **Pet Companion: Care & Memory**. en keywords adjusted (removed care/memory, added pixel/walks). |
-| `✓` → `•` in descriptions | App Store Connect Description rejected `✓` ("invalid characters", both langs). Replaced all `✓` with `•` in `APP_STORE_LISTING.md`. Provided clean paste-ready zh + en description blocks. |
-| iPhone-only | `app.json` `supportsTablet: false`; `project.pbxproj` 4× `TARGETED_DEVICE_FAMILY "1,2"→"1"`. Avoids iPad screenshots/review. Needs native rebuild. |
-| App Store Connect record | Created: Bundle ID com.beichen.petcompanion, Primary Language zh-Hans, SKU petcompanion-001, Full Access. Age Rating done → **13+**. Pricing=Free + App Privacy nutrition labels done by user. Version-page text (keywords, support URL, version 1.0.0, copyright, descriptions) filled. |
-| Hid "share pet profile" button | `PetProfileScreen.tsx` ~L620 — removed the `<TouchableOpacity style={styles.shareButton}>` that had **no `onPress`** (dead button = guideline 2.1 rejection). Kept logout button. |
-| Hid community share | `CommunityScreen.tsx` — removed per-post share `<TouchableOpacity>` + `handleShare` (showed `Alert "分享功能即将上线，敬请期待！"` = "coming soon" placeholder, a rejection trigger) + cleaned `onShare` prop/type/call-site. `community_share*` + `pet_share` i18n keys left in place (unused, will be reused in v1.1). |
-| RLS bug: friends' pets invisible | **Root cause:** `pets` SELECT policy was `USING (auth.uid()=user_id)` → friends' pet rows filtered out → `getPetProfile()` returned null → screen showed "Ta还没创建宠物档案". **Fix:** migration `supabase/migrations/20260528000000_pets_public_read.sql` (DROP old policy, CREATE SELECT `USING (true)`). **Applied to prod** via pooler psql; verified via `pg_policies` (SELECT qual = `true`, modify ops still owner-only). No app rebuild needed for this fix. |
-| Metro recurring "No script URL" | `expo run:ios` kept launching the app before/without Metro → red "No script URL provided / unsanitizedScriptURLString = (null)". Confirmed 8081 empty each time. Started Metro in background: `cd mobile_app && npx expo start --dev-client --clear` (bound to 8081). User reloads sim with ⌘R. |
-| Simulator media | Guided `xcrun simctl addmedia booted <file>` to inject a video into the sim Photos library (drag-drop unreliable; needs H.264/HEVC mp4/mov). |
+1. **Supabase Free tier**: auto-pauses after ~1 week idle; **no automated backups**. Consider Pro ($25/mo) before growth.
+2. **Leaked-password protection**: Pro-only, can't enable on Free.
+3. **Performance advisors** (not bugs at current scale): 63 RLS policies call `auth.uid()` per row (wrap as `(select auth.uid())`), 11 unindexed FKs (chat_messages, post_comments, memory_*, friendships, profile_visits).
+4. **Forgot-password email**: Free built-in SMTP is rate-limited → configure custom SMTP (e.g. Brevo) — server-side, no re-review.
+5. `EMAIL_CONFIRM_REDIRECT_URL` in `supabaseClient.ts` is still the Apple EULA placeholder (only matters if a link-based email flow is ever enabled; email confirmation is OFF, reset uses an 8-digit OTP).
+6. `app.json` permission strings still say "Pet Companion" (cosmetic).
+7. Rotate Supabase DB password (deferred).
+8. Monetization: v1.x later, freemium subscription preferred over ads.
+9. Post-launch smoke test of the **live** App Store build (login, post, health record, forgot-password).
 
 ---
 
-## ⚠ Active bugs / things to verify, NOT YET resolved
+## Git
 
-- **`pet_activities` may also be owner-only RLS.** When viewing a friend's pet, `getPetActivities(friendId)` runs. If the friend's pet profile now shows but their activity/companion history is empty, the `pet_activities` SELECT policy likely has the same owner-only restriction as `pets` did. **Unconfirmed** — could be intended (private activity log). Verify on the sim; if it should be visible, apply the same `USING (true)` fix to `pet_activities`. |
+- `75ca691` (pushed) — v1.0.0 state.
+- Local, **unpushed**: v1.1.0 commit (AI assistant + OCR + version bump + privacy) and session-14 review fixes + this HANDOFF. Push only with the user's OK.
+- `.gitignore` now ignores `*.secrets.local.md`.
 
----
-
-## ⚠ Action items still pending on the user (cumulative)
-
-### 🔄 IN PROGRESS (Phase E — screenshots)
-- **Capture App Store screenshots** from the **iPhone 17 Pro Max simulator** (1320×2868), both zh + en, ~4–6 scenes each (pet profile/avatar, health, companion timer, memory palace, community, optional chat/AI-avatar). Stage attractive content first (login, add pet, records, posts). `⌘S` in the focused sim saves PNGs to Desktop. Optional clean status bar: `xcrun simctl status_bar booted override --time "9:41" --batteryLevel 100 --batteryState charged --wifiBars 3 --cellularBars 4`. Upload under version page → iPhone 6.9″ slot, per language. Leave iPad blank (iPhone-only now).
-
-### 1. Native rebuild required (NOW carries name + iPhone-only changes) (carry-over, expanded)
-`cd mobile_app && npx expo run:ios --device "超级无敌霸王小朋友"` (or the Pro Max sim). Needed to apply: (a) `expo-notifications` native module, (b) **萌宠无忧 display name**, (c) **iPhone-only device family**. Symptom of stale binary: `Cannot find native module 'ExpoPushTokenManager'`.
-
-### 2. Enable Issues on GitHub repo (before submission) (carry-over)
-`https://github.com/Oscar-HHY/pet-companion/settings` → Features → ☑ Issues, so the Support URL doesn't 404. (gh CLI not logged in — do it in browser.)
-
-### 3. Update Supabase Dashboard URL configuration (carry-over)
-Set to Apple EULA placeholder — replace with a real deep-linkable landing page before re-enabling email confirmation.
-
-### 4. Rotate Supabase DB password (DEFER to after launch) (carry-over)
-DB password `<DB_PASSWORD>` is in the chat transcript + `.claude/settings.local.json` permission rule. Anon key is RLS-safe; the DB password bypasses RLS via direct Postgres. Reset at the dashboard AFTER Phase I; then update the settings.local.json rule.
-
-### 5. (resolved-ish) English Name re-save in ASC
-After the "Pet Companion already in use" error, en Name must be saved as **Pet Companion: Care & Memory** (the en Subtitle save was blocked only as a cascade of the invalid Name). Confirm it saved.
-
----
-
-## 🧭 App Store launch process — phase tracker
-
-- [x] **Phase A — Unblock:** Metro stale-path (S8); Metro "No script URL" mitigated (S9, background Metro). A2 enable GitHub Issues *(pending user)*. A3 password rotation *(deferred)*.
-- [x] **Phase B — Apple Developer Program approval** ✅ 2026-05-28
-- [x] **Phase C — App identity:** C1 App IDs (both already existed); C2 App Store Connect record created (zh-Hans primary, text/age-rating/pricing/privacy-labels done).
-- [~] **Phase D — Reviewer backend:** create 2 reviewer auth users (Auto-Confirm, copy UUIDs) + run seed SQL from `APP_STORE_REVIEWER_DEMO.md`. *(not started)*
-- [~] **Phase E — Screenshots** *(IN PROGRESS — iPhone 17 Pro Max sim, 1320×2868, zh+en)*
-- [ ] **Phase F — Production build:** native rebuild (applies name + iPhone-only) → `npx eas build:configure` → `eas build --platform ios --profile production`, OR Xcode archive. No `eas.json` yet.
-- [ ] **Phase G — TestFlight smoke test** (sign in as reviewer1, run walkthrough)
-- [ ] **Phase H — Submit:** App Review Info (demo account) + attach build + Submit for Review
-- [ ] **Phase I — Apple review**
-
-### Pre-launch checklist (content readiness)
-- [x] Privacy Policy hosted + wired
-- [x] App icon 1024×1024 PNG, no alpha
-- [x] Listing copy (zh primary + en secondary) finalized — name 萌宠无忧 / Pet Companion: Care & Memory
-- [x] Privacy Nutrition Labels filled (S9, by user)
-- [x] Age rating 13+ (S9)
-- [x] Pricing Free (S9, by user)
-- [x] Reviewer seed SQL ready
-- [x] Account deletion flow (5.1.1(v))
-- [x] Content moderation (report + block + EULA gate)
-- [x] RLS policies audited (+ pets SELECT opened S9)
-- [x] Server-side AI key
-- [x] Realtime + read-state
-- [x] Vaccination reminders
-- [x] Unfinished share feature hidden (S9)
-- [ ] Screenshots (IN PROGRESS)
-- [ ] Production build uploaded
-
----
-
-## State of Supabase
-
-- ✅ CLI installed (v2.101.0), authenticated, linked: `Pet_Companionship_0.1` (`pzozanrirwjnlrgvqlzj`, Seoul)
-- ✅ Pooler works for DB ops (VPN blocks direct). psql binary: `/opt/homebrew/opt/libpq/bin/psql` (NOT on PATH). Apply via:
-  `PGPASSWORD='<DB_PASSWORD>' /opt/homebrew/opt/libpq/bin/psql -h aws-1-ap-northeast-2.pooler.supabase.com -p 5432 -U postgres.pzozanrirwjnlrgvqlzj -d postgres -f <file>`
-  (note: password contains `?` so it can't go in a URL — use `PGPASSWORD` env, not `--db-url`).
-- 📁 `supabase/migrations/` — **7 files** (1 new this session):
-  - `20260523110053_compliance_tables.sql`
-  - `20260523140743_compliance_grants.sql`
-  - `20260524234900_pet_activities_duration_and_delete.sql`
-  - `20260525030819_pets_delete_policy_fix.sql`
-  - `20260525035707_chat_realtime_and_update_policy.sql`
-  - `20260525040915_vaccinations_reminder_id.sql`
-  - **`20260528000000_pets_public_read.sql`** ← session 9, applied to prod via psql (not via `supabase db push`, so it may NOT be in the remote `supabase_migrations` history table — a future `db push` could see it as pending; the SQL uses `DROP POLICY IF EXISTS` so re-running the DROP is safe but the CREATE would error if re-applied).
-- 📁 `supabase/functions/` — 2 deployed (`generate-pixel-pet`, `delete-account`). ⚠ Both have **uncommitted local edits** (prompt omission; storage list pagination) — deployed state may match working tree (deployed S6) but git does not.
-- 📡 Realtime publication: `chat_messages`, `friendships`
-
----
-
-## State of iOS dev environment
-
-| Component | Value |
-|---|---|
-| Xcode | 26.5 (17F42); iOS SDK iPhoneOS26.5 |
-| macOS | 26 (devicectl JSON bug → physical-device connect unreliable; simulators fine) |
-| CocoaPods | 1.16.2; xcodeproj gem 1.27.0 |
-| Xcode project | `ios/mobileapp.xcodeproj` (target `mobileapp`); workspace `ios/mobileapp.xcworkspace`; `objectVersion` 77 |
-| DEVELOPMENT_TEAM | `HW5J57WXQ8` (4 occurrences) |
-| TARGETED_DEVICE_FAMILY | **`1`** (iPhone-only, set S9; 4 configs) |
-| Display name | **萌宠无忧** (`CFBundleDisplayName`, set S9; needs rebuild to show) |
-| Entitlements | empty `<dict/>` |
-| Simulators available | iOS 26.4/26.5: iPhone 17 / 17 Pro / **17 Pro Max** / 17e, iPad Pro/Air/mini. **Use iPhone 17 Pro Max for 6.9″ screenshots.** |
-| EAS | not configured (no `eas.json`) |
-| Launch cmd (physical) | `cd mobile_app && npx expo run:ios --device "超级无敌霸王小朋友"` |
-| Metro (this session) | started in background: `cd mobile_app && npx expo start --dev-client --clear` |
-
----
-
-## File-level reference: what changed in this session (session 9)
-
-```
-EDITED (mobile app source)
-mobile_app/src/screens/PetProfileScreen.tsx      [removed no-op "分享宠物档案" share button (~L620)]
-mobile_app/src/screens/CommunityScreen.tsx       [removed per-post share icon + handleShare + onShare prop/type/call-site]
-mobile_app/ios/mobileapp/Info.plist              [CFBundleDisplayName: Pet Companion → 萌宠无忧]
-mobile_app/app.json                              [expo.name → 萌宠无忧; supportsTablet → false]
-mobile_app/ios/mobileapp.xcodeproj/project.pbxproj  [TARGETED_DEVICE_FAMILY 4× "1,2" → "1"]
-
-EDITED (listing copy)
-APP_STORE_LISTING.md   [zh-Hans now primary (reordered); names 萌宠无忧 / Pet Companion: Care & Memory; primary language zh-Hans; zh+en keyword adjustments; ✓→• in descriptions; copyright 2026 Hengyu He]
-
-NEW
-supabase/migrations/20260528000000_pets_public_read.sql   [pets SELECT policy → USING(true); APPLIED to prod via psql]
-
-NOTE: nothing committed to git. Memory file project_app_name_and_locale.md updated during session.
-NOT changed: privacy-policy page copy, GitHub repo name, expo-media-library permission strings still say "Pet Companion".
-```
-
-## File-level reference: what changed in session 8 (for context)
-
-```
-EDITED
-HANDOFF.md   [session 8 status — Apple-approved, Metro stale-path fix, App ID capability decision]
-RUNTIME ACTIONS (not file edits): killed stale Downloads-path expo server PIDs; cleared metro caches; freed 8081.
-NO source/migration/function/git changes in session 8.
-```
+## History (condensed)
+- **S1–9**: compliance fixes, migrations, edge functions (generate-pixel-pet, delete-account), RLS sweep, chat realtime, vaccine reminders, rename → 萌宠无忧, iPhone-only, ASC record.
+- **S10**: full submission — reviewer accounts + seed, 8 zh screenshots, pixel-cat icon, cross-account avatar-cache fix, About/support email, builds 1→3, App Privacy labels, storage lockdown migration, submitted.
+- **S11**: auth/email facts (email confirmation OFF; reset = 8-digit OTP; recovery template shows `{{ .Token }}`).
+- **S12**: mainland-China availability investigated → deferred.
+- **S13–14 (2026-10-10 → 10-13)**: v1.1.0 AI assistant (multi-conversation) + medical report OCR, Ark latency fixes, version bump, review pass + DB security fix; release blocked on Apple ID verification.
