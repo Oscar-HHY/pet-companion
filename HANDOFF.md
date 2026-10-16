@@ -1,9 +1,9 @@
 # Pet Companion (萌宠无忧) — Handoff
 
-**Last updated:** 2026-10-13 (sessions 13–14)
-**Status:** v1.0.0 (build 3) is **LIVE on the App Store** since 2026-06-02 (non-mainland regions). **v1.1.0 (build 4) is code-complete, reviewed, committed locally — BLOCKED on Apple Developer identity verification** (can't accept the new Program License Agreement → Xcode can't sign → can't archive/upload). Backend for v1.1 (DB migrations + 3 edge functions) is **already live in production** and is backward-compatible with the v1.0.0 app.
+**Last updated:** 2026-10-16 (sessions 13–15)
+**Status:** v1.0.0 (build 3) is **LIVE on the App Store** since 2026-06-02 (non-mainland regions). **v1.1.0 (build 5) is uploaded to App Store Connect (2026-10-16)** after the user tested the Release build on their iPhone via cable. Backend for v1.1 (DB migrations + 3 edge functions) is **already live in production** and is backward-compatible with the v1.0.0 app.
 
-**Next step:** user resolves Apple ID verification (see Blocker below) → tell Claude → Claude archives build 4 → TestFlight on device → App Store Connect submission (step list under "Release checklist").
+**Next step:** once build 5 finishes processing in App Store Connect → create version 1.1.0, fill metadata, submit for review (step list under "Release checklist", steps 6–7). Walk the user through it one step at a time; **user clicks Release manually**.
 
 ---
 
@@ -17,17 +17,18 @@ In Claude Code: `cd ~/Desktop/Pet_Companionship` (this Mac: `/Users/chaojiwudiba
 - **Deno type-check** (no global deno): `~/.npm/_npx/7eac5a3a53225c60/node_modules/@deno/darwin-arm64/deno check supabase/functions/<fn>/index.ts`
 - **Workflow (user preference)**: Claude writes specs/migrations and reviews; **Codex implements code** via `codex exec -s workspace-write -C ~/Desktop/Pet_Companionship -o <result.md> - < <task.md>` (codex at `~/.npm-global/bin/codex`).
 - **Simulator**: iPhone 17 (`E40E03D2-D13A-489F-945D-F9586AD1FA18`); Metro: `cd mobile_app && npx expo start --clear --port 8081`.
+- **Real device (cable)**: user's iPhone (iPhone17,3) is in the dev provisioning profile and has Developer Mode on. Archive, then `xcrun devicectl device install app --device <id from 'xcrun devicectl list devices'> mobile_app/ios/build/mobileapp.xcarchive/Products/Applications/mobileapp.app`, then `xcrun devicectl device process launch --device <id> com.beichen.petcompanion`.
+- **Upload without Organizer**: `xcodebuild -exportArchive -archivePath <xcarchive> -exportOptionsPlist <plist: method app-store-connect, destination upload, teamID HW5J57WXQ8, signingStyle automatic> -exportPath <tmp> -allowProvisioningUpdates`.
 - **Credentials not in git**: reviewer password is in `HANDOFF.secrets.local.md` (gitignored, local only).
 
 ---
 
-## ⛔ Blocker: Apple Developer identity verification (2026-10-12)
+## Resolved blockers (2026-10-12 → 10-16)
 
-- Archive fails with *"PLA Update available … agree to the latest Program License Agreement"*. Agreeing (Apple Developer app) shows **"Developer requires ID Verification"**.
-- developer.apple.com/account banner: *请验证你的身份并查阅最新版许可协议 … 通过 Apple Developer App 验证身份*. Apple's doc: Developer app → 账户 → 使用开发者 Apple 账户登录 → **验证身份** (姓名/身份证号/电话 + 自拍, run by CFCA for mainland China). Requires the same device throughout, 2FA, iCloud signed in, latest app.
-- **User checked iPhone + Mac Developer app: no 验证身份 entry.** → Must go through **Apple Developer Support**: developer.apple.com/contact → 会员资格与帐号 → 其他会员资格或帐号问题. Phone callback (only during business hours) is fastest; email form was filled with a bilingual description (Team ID HW5J57WXQ8, Apple ID `1207252615@qq.com`) but **not confirmed sent**.
-- Live v1.0.0 is unaffected. Nothing else can proceed on the release until this is resolved.
-- Also done this session: **Xcode had no Apple account signed in** (archive error "No Accounts") — user signed in via Xcode → Settings → Accounts. Should persist now.
+- **Apple ID verification / new PLA**: archive failed with "PLA Update available"; agreeing required ID verification with no entry in the Developer app. Went through Apple Developer Support (case 102994297833); user completed verification 2026-10-16 and signing works again.
+- **Xcode "No Accounts"**: user signed in via Xcode → Settings → Accounts.
+- **`hermesc` killed (exit 9) and deleted by macOS during archive** ("Bundle React Native code and images" phase). Cause: project files carry a `com.apple.quarantine` attribute from WeChat transfer, so macOS removes the unsigned binary when it runs. Fix: download the same react-native tarball from registry.npmjs.org with curl (no quarantine), copy `package/sdks/hermesc/osx-bin/hermesc` to both `mobile_app/node_modules/react-native/sdks/hermesc/osx-bin/` and `mobile_app/ios/Pods/hermes-engine/destroot/bin/`. Recurs after any reinstall of node_modules/Pods from a quarantined source.
+- **Build number 4 was already used** in App Store Connect → bumped to build 5.
 
 ---
 
@@ -70,7 +71,7 @@ In Claude Code: `cd ~/Desktop/Pet_Companionship` (this Mac: `/Users/chaojiwudiba
 3. ✅ Committed locally on `main` (not pushed). **Push to `origin` (public GitHub) only after the user OKs it.**
 4. Archive (command below) → Organizer → Distribute → App Store Connect → Upload.
 5. TestFlight on the user's iPhone: AI assistant (new/switch/delete chat; ask about 萌爪动物医院 record), real camera-photo OCR (incl. consent alert), quick regression (login, post, pet profile).
-6. App Store Connect: create version **1.1.0**, select build 4, "What's New" (新增 AI 宠物助手、病历拍照识别), update **App Privacy** (confirm Photos / Health / Other User Content cover report photos + AI chat; data is sent to Volcengine Ark for processing), App Review notes: where the AI features are + that consent is asked first; reviewer1 account has seed data.
+6. App Store Connect: create version **1.1.0**, select build 5, "What's New" (新增 AI 宠物助手、病历拍照识别), update **App Privacy** (confirm Photos / Health / Other User Content cover report photos + AI chat; data is sent to Volcengine Ark for processing), App Review notes: where the AI features are + that consent is asked first; reviewer1 account has seed data.
 7. Submit → after approval **user clicks Release** (manual release).
 
 ### Production archive command
@@ -92,7 +93,7 @@ Main app `ios/mobileapp/Info.plist` **hardcodes `CFBundleVersion`**; the Live Ac
 ### ⚠ Xcode signing gotchas
 - "Personal Team is not enrolled" → Xcode cached pre-enrollment state: ⌘Q Xcode and reopen.
 - "No Accounts" → sign in at Xcode → Settings → Accounts.
-- "PLA Update available" → accept the new agreement at developer.apple.com (currently blocked by ID verification, see above).
+- "PLA Update available" → accept the new agreement at developer.apple.com (may require ID verification in the Apple Developer app; contact Developer Support if there is no entry).
 
 ---
 
@@ -145,3 +146,4 @@ Main app `ios/mobileapp/Info.plist` **hardcodes `CFBundleVersion`**; the Live Ac
 - **S11**: auth/email facts (email confirmation OFF; reset = 8-digit OTP; recovery template shows `{{ .Token }}`).
 - **S12**: mainland-China availability investigated → deferred.
 - **S13–14 (2026-10-10 → 10-13)**: v1.1.0 AI assistant (multi-conversation) + medical report OCR, Ark latency fixes, version bump, review pass + DB security fix; release blocked on Apple ID verification.
+- **S15 (2026-10-16)**: ID verification done; fixed quarantined hermesc; cable-installed Release build on iPhone, user tested OK; uploaded 1.1.0 (build 5) to App Store Connect.
