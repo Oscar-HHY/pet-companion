@@ -1,9 +1,12 @@
 # Pet Companion (萌宠无忧) — Handoff
 
-**Last updated:** 2026-10-16 (sessions 13–15)
-**Status:** v1.0.0 (build 3) is **LIVE on the App Store** since 2026-06-02 (non-mainland regions). **v1.1.0 (build 5) is uploaded to App Store Connect (2026-10-16)** after the user tested the Release build on their iPhone via cable. Backend for v1.1 (DB migrations + 3 edge functions) is **already live in production** and is backward-compatible with the v1.0.0 app.
+**Last updated:** 2026-10-16 (sessions 13–15, end of day)
+**Status:** v1.0.0 (build 3) is **LIVE on the App Store** since 2026-06-02 (non-mainland regions). **v1.1.0 (build 5) was SUBMITTED FOR APP REVIEW on 2026-10-16** (manual release) after the user tested the Release build on their iPhone via cable. Live privacy policy updated. All code pushed to GitHub. Backend for v1.1 (DB migrations + 3 edge functions) is **already live in production** and is backward-compatible with the v1.0.0 app.
 
-**Next step:** once build 5 finishes processing in App Store Connect → create version 1.1.0, fill metadata, submit for review (step list under "Release checklist", steps 6–7). Walk the user through it one step at a time; **user clicks Release manually**.
+**Next step:** wait for Apple's review result (usually 1–2 days).
+- Approved → status "Pending Developer Release" → **user clicks 发布此版本** in App Store Connect → then do the post-launch smoke test (Open items #9).
+- Rejected → user sends the rejection text/screenshot → fix → bump build to 6 (see build-number gotcha) → archive → upload → resubmit.
+- **Reply to the user in Chinese.**
 
 ---
 
@@ -64,15 +67,15 @@ In Claude Code: `cd ~/Desktop/Pet_Companionship` (this Mac: `/Users/chaojiwudiba
 
 ---
 
-## Release checklist for v1.1.0 (after the blocker clears)
+## Release checklist for v1.1.0 (all done through submission, 2026-10-16)
 
-1. ✅ Version bumped: `MARKETING_VERSION 1.1.0` / build **4** (pbxproj ×4 + hardcoded `Info.plist CFBundleVersion` + `app.json version`).
-2. ✅ `PRIVACY.md` updated (per-conversation delete, effective 2026-10-12). ⚠ The **live policy URL is a different repo** — `https://oscar-hhy.github.io/pet-companion-privacy/` → copy the updated text there too (pushing this repo alone does NOT update it).
-3. ✅ Committed locally on `main` (not pushed). **Push to `origin` (public GitHub) only after the user OKs it.**
-4. Archive (command below) → Organizer → Distribute → App Store Connect → Upload.
-5. TestFlight on the user's iPhone: AI assistant (new/switch/delete chat; ask about 萌爪动物医院 record), real camera-photo OCR (incl. consent alert), quick regression (login, post, pet profile).
-6. App Store Connect: create version **1.1.0**, select build 5, "What's New" (新增 AI 宠物助手、病历拍照识别), update **App Privacy** (confirm Photos / Health / Other User Content cover report photos + AI chat; data is sent to Volcengine Ark for processing), App Review notes: where the AI features are + that consent is asked first; reviewer1 account has seed data.
-7. Submit → after approval **user clicks Release** (manual release).
+1. ✅ Version bumped: `MARKETING_VERSION 1.1.0` / build **5** (4 was already used in ASC) (pbxproj ×4 + hardcoded `Info.plist CFBundleVersion` + `app.json version`).
+2. ✅ `PRIVACY.md` updated (effective 2026-10-12, zh/en in sync). The **live policy is a different repo** (`Oscar-HHY/pet-companion-privacy`, files `privacy.md` + identical `README.md`) — copied and pushed 2026-10-16; verified live. Any future policy change must be copied there too.
+3. ✅ Committed and pushed to `origin/main` (with user's OK).
+4. ✅ Archive (command below) → Organizer → Distribute → App Store Connect → Upload.
+5. ✅ Tested via cable install (not TestFlight) on the user's iPhone: AI assistant (new/switch/delete chat; ask about 萌爪动物医院 record), real camera-photo OCR (incl. consent alert), quick regression (login, post, pet profile).
+6. ✅ App Store Connect: create version **1.1.0**, select build 5, "What's New" (新增 AI 宠物助手、病历拍照识别), update **App Privacy** (confirm Photos / Health / Other User Content cover report photos + AI chat; data is sent to Volcengine Ark for processing), App Review notes: where the AI features are + that consent is asked first; reviewer1 account has seed data.
+7. ✅ Submitted 2026-10-16 → after approval **user clicks Release** (manual release).
 
 ### Production archive command
 ```
@@ -130,14 +133,16 @@ Main app `ios/mobileapp/Info.plist` **hardcodes `CFBundleVersion`**; the Live Ac
 6. `app.json` permission strings still say "Pet Companion" (cosmetic).
 7. Rotate Supabase DB password (deferred).
 8. Monetization: v1.x later, freemium subscription preferred over ads.
+10. Leftover partial CocoaPods gem install in `~/.gem` (from a failed `gem install cocoapods` on system Ruby 2.6, session 14) — harmless; CocoaPods is still NOT usable on this Mac, so no new native modules (e.g. expo-image-manipulator for photo downscaling) until it is installed (needs a newer Ruby, e.g. Homebrew).
 9. Post-launch smoke test of the **live** App Store build (login, post, health record, forgot-password).
 
 ---
 
 ## Git
 
-- `75ca691` (pushed) — v1.0.0 state.
-- Local, **unpushed**: v1.1.0 commit (AI assistant + OCR + version bump + privacy) and session-14 review fixes + this HANDOFF. Push only with the user's OK.
+- Everything pushed to `origin/main` (`Oscar-HHY/pet-companion`, public). **Ask the user before every push.**
+- Git auth: global `credential.https://github.com.helper` → `gh auth git-credential` (gh logged in as **Oscar-HHY**), set 2026-10-16. The macOS keychain still has an old **Oscar2721** GitHub credential with no access to these repos; it is no longer used for github.com.
+- Untracked `ChatGPT Image Oct 11, 2026, 03_27_57 PM.png` in repo root belongs to the user — leave it.
 - `.gitignore` now ignores `*.secrets.local.md`.
 
 ## History (condensed)
@@ -146,4 +151,4 @@ Main app `ios/mobileapp/Info.plist` **hardcodes `CFBundleVersion`**; the Live Ac
 - **S11**: auth/email facts (email confirmation OFF; reset = 8-digit OTP; recovery template shows `{{ .Token }}`).
 - **S12**: mainland-China availability investigated → deferred.
 - **S13–14 (2026-10-10 → 10-13)**: v1.1.0 AI assistant (multi-conversation) + medical report OCR, Ark latency fixes, version bump, review pass + DB security fix; release blocked on Apple ID verification.
-- **S15 (2026-10-16)**: ID verification done; fixed quarantined hermesc; cable-installed Release build on iPhone, user tested OK; uploaded 1.1.0 (build 5) to App Store Connect.
+- **S15 (2026-10-16)**: ID verification done; fixed quarantined hermesc; cable-installed Release build on iPhone, user tested OK; uploaded 1.1.0 (build 5); updated live privacy policy repo; App Privacy labels + review notes; **submitted for review**; pushed all commits; switched git GitHub auth to Oscar-HHY.
